@@ -13,9 +13,9 @@ Curious or sceptical? Checkout the [soon-to-be blog post](https://www.youtube.co
 ## Quick start
 
 You'll need some hardware to control. For now, Hertz supports:
-- [ClearCore](https://clearcore.ai/) - [docs](./src/bridges/clearcore/README.md)
-- [Arduino](https://www.arduino.cc/) - [docs](./src/bridges/arduino/README.md)
-- [Raspberry Pi](https://www.raspberrypi.com/) - [docs](./src/bridges/raspberry/README.md)
+- [ClearCore](https://clearcore.ai/) - [docs](./src/bridges/clearcore/README.md),
+- [Arduino](https://www.arduino.cc/) - [docs](./src/bridges/arduino/README.md),
+- [Raspberry Pi](https://www.raspberrypi.com/) - [docs](./src/bridges/raspberry/README.md) or
 - writing your own bridge. This is quite easy, see [Bring Your Own Peripheral](./docs/bring-your-own-peripheral.md).
 
 Hertz needs to run **within a Node.js-like environment**. This means that:
@@ -27,17 +27,28 @@ Hertz needs to run **within a Node.js-like environment**. This means that:
 We suggest starting with a typescript project within node and using `tsx` to run the code. Then, install Hertz (only installation from GitHub is supported ATM):
 
 ```
-pnpm add github:zigapk/hertz
+pnpm add react github:zigapk/hertz
+pnpm add serialport # Only if you need to communicate with hardware over a serial connection.
 ```
 
+Depending on your settings and package manager, you might also need to run `pnpm approve-builds` or similar.
+
+Also make sure that your tsconfig.json has the following settings: 
+```jsonc
+"jsx": "react-jsx",
+TODO
+```
+
+### Writing a program
+
+```tsx
 
 
 
 
 
 
-
-
+```
 
 
 
@@ -49,3 +60,6 @@ TODO:
 - add arduino and clearcore bridges
 - add ci
 - expose this as a package installable from github
+- event loop should allow for more controll
+
+

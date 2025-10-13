@@ -4,6 +4,18 @@
 	"description": "A React renderer for driving hardware peripherals. Projects internal React state to the physical world.",
   "main": "build/index.js",
   "files": ["build"],
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js",
+      "import": "./build/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./build/jsx-runtime.d.ts",
+      "default": "./build/jsx-runtime.js",
+      "import": "./build/jsx-runtime.js"
+    }
+  },
   "types": "build/index.d.ts",
 	"scripts": {
 		"example:clearcore-complex": "tsx src/examples/clearcore-complex.tsx",
