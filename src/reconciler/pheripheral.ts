@@ -76,7 +76,7 @@ export abstract class Peripheral<
 	 * Polls the peripheral for new values and fires `on...Change` callbacks.
 	 * Fires callbacks for all values on the first run, and only for changed values on subsequent runs.
 	 */
-	async queryForChanges(): Promise<void> {
+	public async queryForChanges(): Promise<void> {
 		const newValues = await this.readValuesFromHardware();
 
 		// Check if this is the initial read (no previous values stored).
