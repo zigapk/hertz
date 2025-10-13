@@ -1,11 +1,12 @@
 {
-	"name": "renderer",
-	"version": "1.0.0",
-	"description": "",
+	"name": "hertz",
+	"version": "0.0.1",
+	"description": "A React renderer for driving hardware peripherals. Projects internal React state to the physical world.",
 	"main": "index.js",
 	"scripts": {
 		"dev": "tsx src/main.tsx",
-		"test": "vitest --disable-console-intercept"
+    "build": "tsc",
+    "prepare": "pnpm run build"
 	},
 	"keywords": [],
 	"author": "",
