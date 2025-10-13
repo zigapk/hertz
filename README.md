@@ -2,7 +2,7 @@
 # React Hertz
 
 
-![Let a picture speak a thousand words.](docs/assets/pitch.png).
+![Let a picture speak a thousand words.](docs/assets/blink.gif).
 
 Hertz is a React framework (or reconciler/renderer) for driving hardware peripherals. **It projects the internal state of your React app to the physical world.**
 
