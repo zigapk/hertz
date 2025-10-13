@@ -37,13 +37,13 @@ export abstract class Peripheral<
 	ReadableValues extends object,
 > {
 	// The current props for the peripheral, including `on...Change` callbacks.
-	protected props: PeripheralProps<WritableProps, ReadableValues>;
+	public props: PeripheralProps<WritableProps, ReadableValues>;
 
 	// The last known values from the peripheral, used for change detection.
 	private lastValues?: ReadableValues;
 
 	// Hardware allows us to have a reference to an instance of the hardware we're using.
-	protected readonly hardware: Hardware;
+	public readonly hardware: Hardware;
 
 	constructor(
 		props: PeripheralProps<WritableProps, ReadableValues>,
