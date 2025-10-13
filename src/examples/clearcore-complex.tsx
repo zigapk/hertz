@@ -1,8 +1,8 @@
 import { ClearCore } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
-import { peripherals } from "@/bridges/clearcore/index.js";
-import { createReconciler } from "@/reconciler/reconciler.js";
+import { clearCorePeripherals } from "@/bridges";
+import { createReconciler } from "@/reconciler";
 
 // Follow makes sure PIN 2 has the same value as PIN 1.
 const Follow = () => {
@@ -57,7 +57,10 @@ async function main() {
 	await clearcore.connect();
 
 	// Initialize the reconciler.
-	const { render, runEventLoop } = createReconciler(peripherals, clearcore);
+	const { render, runEventLoop } = createReconciler(
+		clearCorePeripherals,
+		clearcore,
+	);
 
 	// Render and run the event loop.
 	render(<Program />);
