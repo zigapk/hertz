@@ -4,7 +4,7 @@
   "description": "A React renderer for driving hardware peripherals. Projects internal React state to the physical world.",
   "main": "build/index.js",
   "files": [
-    "build"
+    "dist"
   ],
   "exports": {
     ".": {
