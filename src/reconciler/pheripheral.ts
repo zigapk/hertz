@@ -37,13 +37,13 @@ export abstract class Peripheral<
 	ReadableValues extends object,
 > {
 	// The current props for the peripheral, including `on...Change` callbacks.
-	public props: PeripheralProps<WritableProps, ReadableValues>;
+	protected props: PeripheralProps<WritableProps, ReadableValues>;
 
 	// The last known values from the peripheral, used for change detection.
 	private lastValues?: ReadableValues;
 
 	// Hardware allows us to have a reference to an instance of the hardware we're using.
-	public readonly hardware: Hardware;
+	protected readonly hardware: Hardware;
 
 	constructor(
 		props: PeripheralProps<WritableProps, ReadableValues>,
@@ -76,7 +76,7 @@ export abstract class Peripheral<
 	 * Polls the peripheral for new values and fires `on...Change` callbacks.
 	 * Fires callbacks for all values on the first run, and only for changed values on subsequent runs.
 	 */
-	public async queryForChanges(): Promise<void> {
+	async queryForChanges(): Promise<void> {
 		const newValues = await this.readValuesFromHardware();
 
 		// Check if this is the initial read (no previous values stored).
