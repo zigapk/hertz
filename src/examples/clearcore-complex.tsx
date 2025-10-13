@@ -4,6 +4,7 @@ import { SerialPort } from "serialport";
 import { peripherals } from "@/bridges/clearcore/index.js";
 import { createReconciler } from "@/reconciler/reconciler.js";
 
+// Follow makes sure PIN 2 has the same value as PIN 1.
 const Follow = () => {
 	const [value, setValue] = useState(false);
 
@@ -15,6 +16,7 @@ const Follow = () => {
 	);
 };
 
+// Blink simply toggles the value of PIN 0 every second.
 const Blink = () => {
 	const [value, setValue] = useState(false);
 
@@ -29,6 +31,7 @@ const Blink = () => {
 	return <dpinout pin={0} value={value} />;
 };
 
+// Program alternates between renering Follow and Blink.
 const Program = () => {
 	const [mode, setMode] = useState<"blink" | "follow">("blink");
 
@@ -40,11 +43,11 @@ const Program = () => {
 		return () => clearInterval(interval);
 	});
 
-	console.log(mode);
 	return mode === "blink" ? <Blink /> : <Follow />;
 };
 
 async function main() {
+	// Create a new ClearCore instance and connect to it.
 	const clearcore = new ClearCore(
 		new SerialPort({
 			path: "/dev/ttyACM0",
@@ -53,13 +56,12 @@ async function main() {
 	);
 	await clearcore.connect();
 
+	// Initialize the reconciler.
 	const { render, runEventLoop } = createReconciler(peripherals, clearcore);
 
+	// Render and run the event loop.
 	render(<Program />);
 	await runEventLoop();
 }
 
 main();
-
-// TODO: it would be better to be able to add as many peripherals as you want (and then prefix them if needed - how would this work with types though?)
-// TODO: if possible also add timeout for too long renreders

@@ -2,9 +2,10 @@
 	"name": "hertz",
 	"version": "0.0.1",
 	"description": "A React renderer for driving hardware peripherals. Projects internal React state to the physical world.",
-	"main": "index.js",
+  "main": "build/src/index.js",
+  "files": ["build"],
 	"scripts": {
-		"dev": "tsx src/main.tsx",
+		"example:clearcore-complex": "tsx src/examples/clearcore-complex.tsx",
     "build": "tsc",
     "prepare": "pnpm run build"
 	},
