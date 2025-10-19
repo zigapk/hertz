@@ -11,11 +11,6 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs",
       "import": "./dist/index.mjs"
-    },
-    "./jsx-runtime": {
-      "types": "./dist/jsx-runtime.d.mts",
-      "default": "./dist/jsx-runtime.mjs",
-      "import": "./dist/jsx-runtime.mjs"
     }
   },
   "types": "dist/index.d.ts",
