@@ -53,11 +53,11 @@ TODO: address the questions below:
 - ecosystem (queries, ability to mount router etc)
 - connecting web and hardware developers
 
-### Important Concepts
+## Important Concepts
 
 Hertz has a few gotchas that we'd like to put forth here:
 
-#### Peripherals need to be leaf nodes
+### Peripherals need to be leaf nodes
 Hertz peripherals (tags) are leaf nodes in the React tree. This means that they cannot have children. For example, you cannot do this:
 ```tsx
 <dpinout pin={17} value={true}>
@@ -65,7 +65,7 @@ Hertz peripherals (tags) are leaf nodes in the React tree. This means that they 
 </dpinout>
 ```
 
-#### Peripherals might clash with each other
+### Peripherals might clash with each other
 Depending on the peripheral type, you might encounter clashes if you try to control the same physical peripheral from multiple places in the React tree. This is no different from what happens if you overwrite a pin in a regular program (say C), but let's look at two examples nonetheless.
 
 **Example 1**: Clashing and overwriting digital pins will result in one of them overriding the other.
