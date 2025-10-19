@@ -2,9 +2,9 @@
 # React Hertz 💡
 
 
-![Let a picture speak a thousand words.](docs/assets/blink.gif).
+![Let a picture speak a thousand words.](docs/assets/blink.gif)
 
-Hertz is a React framework (or reconciler/renderer) for driving hardware peripherals. **It projects the internal state of your React app to the physical world** instead of a [screen](https://www.npmjs.com/package/react-dom), [video](https://www.remotion.dev/) or [term inal](https://github.com/vadimdemedes/ink).
+Hertz is a React framework (or reconciler/renderer) for driving hardware peripherals. **It projects the internal state of your React app to the physical world** instead of a [screen](https://www.npmjs.com/package/react-dom), [video](https://www.remotion.dev/) or [terminal](https://github.com/vadimdemedes/ink).
 
 **NOTE**: Ihis is very much a work in progress. The docs are lacking, the API is not stable and tests are largely non-existent. However, you are very much welcome to play around with the project.
 
@@ -17,7 +17,7 @@ You'll need some hardware to control. For now, Hertz supports the most basic per
 - [Arduino](https://www.arduino.cc/) - [docs](./src/bridges/arduino/README.md) or
 - [Raspberry Pi](https://www.raspberrypi.com/) - [docs](./src/bridges/raspberry/README.md).
 
-However, it is very easy and more practical to write a bridge for your own hardware. See [Bring your own hardware'](docs/bring-your-own-hardware.md) for more information.
+However, it is very easy and more practical to write a bridge for your own hardware. See [Bring your own hardware](docs/bring-your-own-hardware.md) for more information.
 
 Hertz needs to run **within a Node.js-like environment**. This means that:
 1. Rasppbery Pi can control the hardware on the defice itself.
