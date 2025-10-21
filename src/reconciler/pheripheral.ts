@@ -59,6 +59,11 @@ export abstract class Peripheral<
 	abstract initPeripheral(): Promise<void> | void;
 
 	/**
+	 * Performs disconnect from the peripheral. Can be used to release resources, unset values, etc.
+	 */
+	abstract disconnectPeripheral(): Promise<void> | void;
+
+	/**
 	 * Reads the latest values from the physical peripheral.
 	 */
 	abstract readValuesFromHardware(): Promise<ReadableValues>;

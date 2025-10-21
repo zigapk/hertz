@@ -28,6 +28,9 @@ export class DPinOut extends Peripheral<ClearCore, DPinOutProps, EmptyObject> {
 		});
 	}
 
+	// Nothing to disconnect here
+	async disconnectPeripheral(): Promise<void> {}
+
 	override async applyNewPropsToHardware(props: DPinOutProps): Promise<void> {
 		await super.applyNewPropsToHardware(props);
 

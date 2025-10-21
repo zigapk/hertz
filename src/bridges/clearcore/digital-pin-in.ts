@@ -28,6 +28,9 @@ export class DPinIn extends Peripheral<
 		await this.hardware.setPinsMode(PinMode.DigitalInput, this.pin);
 	}
 
+	// Nothing to disconnect here
+	async disconnectPeripheral(): Promise<void> {}
+
 	// There is nothing really to apply
 	override async applyNewPropsToHardware(props: DPinInProps): Promise<void> {
 		if (props.pin !== this.pin) {

@@ -17,6 +17,8 @@
   "scripts": {
     "example:clearcore-blink": "tsx src/examples/clearcore-blink.tsx",
     "example:clearcore-complex": "tsx src/examples/clearcore-complex.tsx",
+    "example:clearcore-motor-velocity": "tsx src/examples/clearcore-motor-velocity.tsx",
+    "example:clearcore-motor-position": "tsx src/examples/clearcore-motor-position.tsx",
     "build": "tsdown",
     "prepare": "pnpm run build"
   },
