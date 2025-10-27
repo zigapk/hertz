@@ -19,7 +19,7 @@ export interface DOMNode<
 	type: TagName;
 	props: Props;
 	children: never[]; // Hardware nodes need to be leaf nodes - they cannot have children.
-	pheripheralInstance: Peripheral<unknown, unknown, object>;
+	pheripheralInstance: Peripheral<unknown, object, object>;
 }
 
 interface HostContainer<TagName extends string> {
@@ -29,7 +29,7 @@ interface HostContainer<TagName extends string> {
 // Class that holds current event priority during runtime.
 class ReconcilerState {
 	private currentEventPriority: number = NoEventPriority;
-	private readonly mountedPheriperals: Peripheral<unknown, unknown, object>[] =
+	private readonly mountedPheriperals: Peripheral<unknown, object, object>[] =
 		[];
 
 	getCurrentEventPriority(): number {
@@ -39,20 +39,18 @@ class ReconcilerState {
 		this.currentEventPriority = priority;
 	}
 
-	pushPheriperal(peripheral: Peripheral<unknown, unknown, object>): void {
+	pushPheriperal(peripheral: Peripheral<unknown, object, object>): void {
 		this.mountedPheriperals.push(peripheral);
 	}
 
-	popPheriperal(peripheral: Peripheral<unknown, unknown, object>): void {
+	popPheriperal(peripheral: Peripheral<unknown, object, object>): void {
 		this.mountedPheriperals.splice(
 			this.mountedPheriperals.indexOf(peripheral),
 			1,
 		);
 	}
 
-	getIthPheriperal(
-		i: number,
-	): Peripheral<unknown, unknown, object> | undefined {
+	getIthPheriperal(i: number): Peripheral<unknown, object, object> | undefined {
 		return this.mountedPheriperals[i];
 	}
 

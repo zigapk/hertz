@@ -4,7 +4,7 @@ export type AnyPeripheralConstructor<Hardware> = {
 		// biome-ignore lint/suspicious/noExplicitAny: Needs to be ambiguous because we cannot always know the type in advance.
 		props: PeripheralProps<any, any>,
 		hardware: Hardware,
-	): Peripheral<unknown, unknown, object>;
+	): Peripheral<unknown, object, object>;
 	readonly tagName: string;
 };
 
@@ -27,11 +27,33 @@ type OnChangeProps<V extends object> = {
 };
 
 /**
+ * A Mapped Type that creates "apply" methods for each key in T.
+ */
+export type ApplyMethods<T extends object> = {
+	[K in keyof T as `apply${Capitalize<string & K>}`]: (
+		value: T[K],
+	) => Promise<void>;
+};
+
+/**
+ * Combines required `apply` and optional `disown` methods.
+ * A concrete class will `implements` this single type.
+ */
+type PeripheralLifecycleMethods<T extends object> = ApplyMethods<T> &
+	DisownMethods<T>;
+/**
+ * Creates *optional* `disown...` methods for each key in T.
+ */
+type DisownMethods<T extends object> = {
+	[K in keyof T as `disown${Capitalize<string & K>}`]?: () => Promise<void>;
+};
+
+/**
  * Combines a peripheral's base props with the auto-generated OnChangeProps.
  */
 export type PeripheralProps<P, V extends object> = P & OnChangeProps<V>;
 
-export abstract class Peripheral<
+export abstract class BasePeripheral<
 	Hardware,
 	WritableProps,
 	ReadableValues extends object,
@@ -59,11 +81,6 @@ export abstract class Peripheral<
 	abstract initPeripheral(): Promise<void> | void;
 
 	/**
-	 * Performs disconnect from the peripheral. Can be used to release resources, unset values, etc.
-	 */
-	abstract disconnectPeripheral(): Promise<void> | void;
-
-	/**
 	 * Reads the latest values from the physical peripheral.
 	 */
 	abstract readValuesFromHardware(): Promise<ReadableValues>;
@@ -75,6 +92,13 @@ export abstract class Peripheral<
 		props: PeripheralProps<WritableProps, ReadableValues>,
 	): Promise<void> {
 		this.props = props;
+
+		// TODO: call the onChange methods in a memoized way (memoization needs to be done in the same way as for onChange callbacks)
+		// TODO: if the prop has become undefined, call the disown method
+	}
+
+	async desconstructPeripheral(): Promise<void> {
+		// TODO: call all the disown methods
 	}
 
 	/**
@@ -122,3 +146,14 @@ export abstract class Peripheral<
 		this.lastValues = newValues;
 	}
 }
+
+/**
+ * This type represents a fully implemented peripheral instance.
+ * It combines the base Peripheral class with the dynamic ApplyMethods.
+ */
+export type Peripheral<
+	Hardware,
+	WritableProps extends object,
+	ReadableValues extends object,
+> = BasePeripheral<Hardware, WritableProps, ReadableValues> &
+	PeripheralLifecycleMethods<WritableProps>;
