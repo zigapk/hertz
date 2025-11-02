@@ -1,5 +1,9 @@
 import type { ClearCore, MotorState } from "llamajet-driver-ts";
-import { Peripheral, type PeripheralProps } from "@/reconciler/pheripheral";
+import {
+	BasePeripheral,
+	type PeripheralLifecycleMethods,
+	type PeripheralProps,
+} from "@/reconciler/pheripheral";
 
 // The motor can be in either of
 type MotorTargetProps =
@@ -7,15 +11,17 @@ type MotorTargetProps =
 	| { targetVelocity: number; targetPosition?: never; acceleration: number } // Target velocity movement
 	| { targetPosition?: never; targetVelocity?: never; acceleration?: never }; // None of those
 
-interface BaseMotorProps {
+interface MotorProps {
 	port: number;
 	enabled?: boolean;
 	eStopPin?: number;
+	target?: MotorTargetProps;
 }
 
-type MotorProps = BaseMotorProps & MotorTargetProps;
-
-export class Motor extends Peripheral<ClearCore, MotorProps, MotorState> {
+export class Motor
+	extends BasePeripheral<ClearCore, MotorProps, MotorState>
+	implements PeripheralLifecycleMethods<MotorProps>
+{
 	static readonly tagName = "motor";
 	readonly port: number;
 	readonly eStopPin?: number;
@@ -35,78 +41,82 @@ export class Motor extends Peripheral<ClearCore, MotorProps, MotorState> {
 		}
 	}
 
-	// Stop the motor on disconnect
-	async disconnectPeripheral(): Promise<void> {
-		await this.hardware.stopMotors(this.port);
-		// TODO: we should disable motors here
+	async applyPort() {
+		throw new Error("Changing the port after initialization is not supported.");
 	}
 
-	override async applyNewPropsToHardware(
-		props: PeripheralProps<MotorProps, MotorState>,
-	): Promise<void> {
-		await super.applyNewPropsToHardware(props);
+	async applyEStopPin() {
+		throw new Error(
+			"Changing the eStopPin after initialization is not supported.",
+		);
+	}
 
-		if (props.port !== this.port || props.eStopPin !== this.eStopPin) {
-			throw new Error(
-				"Cannot change port or estop pin after the fact - unmount and remount the component.",
-			);
-		}
-
-		if (props.enabled) {
+	async applyEnabled(enabled: boolean) {
+		if (enabled) {
 			await this.hardware.enableMotors(this.port);
 		} else {
 			await this.hardware.disableMotors(this.port);
 		}
+	}
+	async dissownEnabled() {
+		await this.hardware.disableMotors(this.port);
+	}
 
-		// If not enabled, we won't perform any movements
-		if (!props.enabled) {
-			await this.hardware.stopMotors(this.port);
+	async applyTarget(target: MotorTargetProps) {
+		const { targetPosition, targetVelocity, acceleration } = target;
+
+		const isVelocityMovement =
+			acceleration != null && targetVelocity != null && targetPosition == null;
+		const isPositionMovement =
+			acceleration == null && targetVelocity == null && targetPosition != null;
+
+		// If none of the types are set, there is something wrong
+		if (!isVelocityMovement && !isPositionMovement) {
+			throw new Error("Target must be set");
+		}
+
+		// Stop the motor first no matter what
+		await this.hardware.stopMotors(this.port);
+
+		// The acceleration cannot be non-positive
+		if (acceleration <= 0) {
+			throw new Error("Acceleration must be positive");
+		}
+
+		// If target velocity is 0, no movement is needed
+		if (targetVelocity === 0) {
 			return;
 		}
 
-		const isVelocityMovement =
-			props.targetVelocity != null &&
-			props.targetPosition == null &&
-			props.acceleration != null;
-		const isPositionMovement =
-			props.targetPosition != null &&
-			props.targetVelocity != null &&
-			props.acceleration != null;
-
-		// If none of those movements are specified, throw
-		if (!isVelocityMovement && !isPositionMovement) {
-			throw new Error("Must specify a velocity or position movement");
+		if (isVelocityMovement && targetVelocity > 0) {
+			await this.hardware.setMotorsVelocity({
+				id: this.port,
+				velocity: targetVelocity,
+				acceleration,
+			});
+			return;
 		}
 
 		if (isPositionMovement) {
-			// Stop motor first
-			await this.hardware.stopMotors(this.port);
+			const state = await this.hardware.readMotors(this.port);
+			const currentPosition = state[0].position;
+			const diff = targetPosition - currentPosition;
 
-			// Read where we are and calculate the difference
-			const motorState = (await this.hardware.readMotors(this.port))[0];
-			const currentPosition = motorState.position;
-			const diff = props.targetPosition - currentPosition;
+			if (diff === 0) {
+				return;
+			}
 
-			// Set target position on the motor to the desired new position
 			await this.hardware.moveMotors({
 				id: this.port,
-				velocity: props.targetVelocity,
-				acceleration: props.acceleration,
 				steps: diff,
+				velocity: targetVelocity,
+				acceleration,
 			});
-		} else if (isVelocityMovement) {
-			// Stop motor first
-			await this.hardware.stopMotors(this.port);
-
-			if (props.targetVelocity !== 0) {
-				// Set velocity if any
-				await this.hardware.setMotorsVelocity({
-					id: this.port,
-					velocity: props.targetVelocity,
-					acceleration: props.acceleration,
-				});
-			}
 		}
+	}
+
+	async dissownTarget() {
+		await this.hardware.stopMotors(this.port);
 	}
 
 	async readValuesFromHardware(): Promise<MotorState> {

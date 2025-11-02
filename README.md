@@ -8,7 +8,7 @@ Hertz is a React framework (or reconciler/renderer) for driving hardware periphe
 
 **NOTE**: This is very much a work in progress. The docs are lacking, the API is not stable and tests are largely non-existent. However, you are very much welcome to play around with the project.
 
-Curious or sceptical? Checkout the [soon-to-be blog post](https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1).
+Curious or sceptical about using React to drive hardware? Checkout the [soon-to-be blog post](https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1).
 
 ## Quick start
 
@@ -80,7 +80,7 @@ Depending on the peripheral type, you might encounter clashes if you try to cont
 <dpinin pin={1} onChange={console.log} />
 ```
 
-However, it might be completley fine to do this in some cases like reading from the same pin in different places, controlling different aspects of the same peripheral (say, whether a stepper motor is enabled and its position). This depends on the peripheral itself and bridge implementation.
+However, it might be completley fine to do this in some cases like reading from the same pin in different places, controlling different aspects of the same peripheral (say, setting whether a stepper motor is enabled and its position). This depends on the peripheral itself and its bridge implementation.
 
 ## TODO
 
@@ -90,6 +90,7 @@ TODO:
 - add ci
 - expose this as a package installable from github
 - event loop should allow for more controll
+- destruct peripherals
 
 
 

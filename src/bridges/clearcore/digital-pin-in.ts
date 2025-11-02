@@ -1,5 +1,9 @@
 import { type ClearCore, PinMode } from "llamajet-driver-ts";
-import { Peripheral, type PeripheralProps } from "@/reconciler/pheripheral";
+import {
+	BasePeripheral,
+	type PeripheralLifecycleMethods,
+	type PeripheralProps,
+} from "@/reconciler/pheripheral";
 
 interface DPinInBaseProps {
 	pin: number;
@@ -11,11 +15,10 @@ interface DPinInValues {
 
 export type DPinInProps = PeripheralProps<DPinInBaseProps, DPinInValues>;
 
-export class DPinIn extends Peripheral<
-	ClearCore,
-	DPinInBaseProps,
-	DPinInValues
-> {
+export class DPinIn
+	extends BasePeripheral<ClearCore, DPinInBaseProps, DPinInValues>
+	implements PeripheralLifecycleMethods<DPinInBaseProps>
+{
 	static readonly tagName = "dpinin";
 	readonly pin: number;
 
@@ -24,25 +27,16 @@ export class DPinIn extends Peripheral<
 		this.pin = props.pin;
 	}
 
-	async initPeripheral(): Promise<void> {
+	async initPeripheral() {
 		await this.hardware.setPinsMode(PinMode.DigitalInput, this.pin);
 	}
 
-	// Nothing to disconnect here
-	async disconnectPeripheral(): Promise<void> {}
-
-	// There is nothing really to apply
-	override async applyNewPropsToHardware(props: DPinInProps): Promise<void> {
-		if (props.pin !== this.pin) {
-			throw new Error(
-				"Cannot change pin after the fact - unmount and remount the component.",
-			);
-		}
-		await super.applyNewPropsToHardware(props);
+	async applyPin() {
+		throw new Error("Changing the pin after initialization is not supported.");
 	}
 
 	// Read the single value from the pin
-	async readValuesFromHardware(): Promise<DPinInValues> {
+	async readValuesFromHardware() {
 		const values = await this.hardware.readDigitalSensors(this.pin);
 		return { value: values[0] };
 	}

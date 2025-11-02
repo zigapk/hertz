@@ -128,13 +128,17 @@ export function createReconciler<
 		},
 		removeChild: (_parent, child) => {
 			reconcilerState.popPheriperal(child.pheripheralInstance);
+			// Deconstruction can happen asynchronously without needing to await.
+			child.pheripheralInstance.desconstructPeripheral();
 		},
 		finalizeInitialChildren: () => true, // Signal that `commitMount` should be called later.
 		commitMount: (instance) => {
-			instance.pheripheralInstance.initPeripheral();
+			// TODO: there is no await here which is sketchy. How do we guarantee this happens before commitUpdate?
+			return instance.pheripheralInstance.initPeripheral();
 		},
 		commitUpdate: (instance, _type, _prevProps, nextProps) => {
-			instance.props = nextProps;
+			console.log("commitUpdate", instance);
+			// TODO: how do we await this?
 			instance.pheripheralInstance.applyNewPropsToHardware(nextProps);
 		},
 
@@ -183,6 +187,8 @@ export function createReconciler<
 		removeChildFromContainer: (container, child) => {
 			container.head = null;
 			reconcilerState.popPheriperal(child.pheripheralInstance);
+			// Deconstruction can happen asynchronously without needing to await.
+			child.pheripheralInstance.desconstructPeripheral();
 		},
 
 		// Other things that are not supported but are fine as they are
@@ -264,7 +270,7 @@ export function createReconciler<
 			i %= l;
 		}
 	};
-
+	// TODO: cleanup method
 	return {
 		render,
 		runEventLoop,

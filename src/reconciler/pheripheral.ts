@@ -30,17 +30,11 @@ type OnChangeProps<V extends object> = {
  * A Mapped Type that creates "apply" methods for each key in T.
  */
 export type ApplyMethods<T extends object> = {
-	[K in keyof T as `apply${Capitalize<string & K>}`]: (
-		value: T[K],
+	[K in keyof T as `apply${Capitalize<string & K>}`]-?: (
+		value: Exclude<T[K], undefined>, // Peripheral calls disown mehods if undefined is present, we know that here this will not happen
 	) => Promise<void>;
 };
 
-/**
- * Combines required `apply` and optional `disown` methods.
- * A concrete class will `implements` this single type.
- */
-type PeripheralLifecycleMethods<T extends object> = ApplyMethods<T> &
-	DisownMethods<T>;
 /**
  * Creates *optional* `disown...` methods for each key in T.
  */
@@ -49,13 +43,20 @@ type DisownMethods<T extends object> = {
 };
 
 /**
+ * Combines required `apply` and optional `disown` methods.
+ * A concrete class will `implements` this single type.
+ */
+export type PeripheralLifecycleMethods<T extends object> = ApplyMethods<T> &
+	DisownMethods<T>;
+
+/**
  * Combines a peripheral's base props with the auto-generated OnChangeProps.
  */
 export type PeripheralProps<P, V extends object> = P & OnChangeProps<V>;
 
 export abstract class BasePeripheral<
 	Hardware,
-	WritableProps,
+	WritableProps extends object,
 	ReadableValues extends object,
 > {
 	// The current props for the peripheral, including `on...Change` callbacks.
@@ -91,14 +92,64 @@ export abstract class BasePeripheral<
 	async applyNewPropsToHardware(
 		props: PeripheralProps<WritableProps, ReadableValues>,
 	): Promise<void> {
+		const oldProps = this.props;
 		this.props = props;
 
-		// TODO: call the onChange methods in a memoized way (memoization needs to be done in the same way as for onChange callbacks)
-		// TODO: if the prop has become undefined, call the disown method
+		const propKeys = Object.keys(props) as Array<keyof WritableProps>;
+
+		// TODO: keys here should iterate over an union of propKeys and keys from the old props
+		for (const key of propKeys) {
+			const newValue = props[key];
+			const oldValue = oldProps[key];
+
+			const applyMethodName = `apply${
+				(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
+			}` as keyof PeripheralLifecycleMethods<WritableProps>;
+
+			const applyMethod = (
+				this as unknown as PeripheralLifecycleMethods<WritableProps>
+			)[applyMethodName] as ((value: unknown) => Promise<void>) | undefined;
+
+			if (
+				newValue !== undefined &&
+				JSON.stringify(oldValue) !== JSON.stringify(newValue) &&
+				typeof applyMethod === "function"
+			) {
+				await applyMethod.call(this, newValue);
+			}
+
+			if (newValue === undefined) {
+				const disownMethodName = `disown${
+					(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
+				}` as keyof DisownMethods<WritableProps>;
+
+				const disownMethod = (this as unknown as DisownMethods<WritableProps>)[
+					disownMethodName
+				] as (() => Promise<void>) | undefined;
+
+				if (typeof disownMethod === "function") {
+					await disownMethod.call(this);
+				}
+			}
+		}
 	}
 
 	async desconstructPeripheral(): Promise<void> {
-		// TODO: call all the disown methods
+		const propKeys = Object.keys(this.props) as Array<keyof WritableProps>;
+
+		for (const key of propKeys) {
+			const disownMethodName = `disown${
+				(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
+			}` as keyof DisownMethods<WritableProps>;
+
+			const disownMethod = (this as unknown as DisownMethods<WritableProps>)[
+				disownMethodName
+			] as (() => Promise<void>) | undefined;
+
+			if (typeof disownMethod === "function") {
+				await disownMethod.call(this);
+			}
+		}
 	}
 
 	/**
