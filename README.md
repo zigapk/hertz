@@ -8,8 +8,6 @@ Hertz is a React framework (or reconciler/renderer) for driving hardware periphe
 
 **NOTE**: This is very much a work in progress. The docs are lacking, the API is not stable and tests are largely non-existent. However, you are very much welcome to play around with the project.
 
-Curious or sceptical about using React to drive hardware? Checkout the [soon-to-be blog post](https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1).
-
 ## Quick start
 
 You'll need some hardware to control. For now, Hertz supports the most basic peripherals for:
@@ -17,11 +15,11 @@ You'll need some hardware to control. For now, Hertz supports the most basic per
 - [Arduino](https://www.arduino.cc/) - [docs](./src/bridges/arduino/README.md) or
 - [Raspberry Pi](https://www.raspberrypi.com/) - [docs](./src/bridges/raspberry/README.md).
 
-However, it is very easy and more practical to write a bridge for your own hardware. See [Bring your own hardware](docs/bring-your-own-hardware.md) for more information.
+However, it is very easy to write a bridge for your own hardware. See [Bring your own hardware](docs/bring-your-own-hardware.md) for more information.
 
 Hertz needs to run **within a Node.js-like environment**. This means that:
 1. Rasppbery Pi can control the hardware on the defice itself.
-2. Arduino and other controlers incapable of running Node need to be controller from a computer (for example using a serial connection).
+2. Arduino and other controlers incapable of running Node need to be controlled from a computer (for example using a serial connection).
 3. You cannot run it in a browser.
 4. There appears to be no reason why Hertz would be incompatible with Deno or Bun, but we did not test this as of yet.
 
@@ -57,12 +55,12 @@ TODO: address the questions below:
 
 Hertz has a few gotchas that we'd like to put forth here:
 
-### Peripherals need to be leaf nodes
-Hertz peripherals (tags) are leaf nodes in the React tree. This means that they cannot have children. For example, you cannot do this:
+### Peripherals are created and updated from the root of the tree to the leaves
+This means that if you put component B inside component A, A is guaranteed to have been initialized and updated its props to the latest state before the same happens for B.
 ```tsx
-<dpinout pin={17} value={true}>
-    <SomeOtherComponent />
-</dpinout>
+<A prop1={value}>
+    <B prop2={value} />
+</A>
 ```
 
 ### Peripherals might clash with each other
@@ -80,7 +78,13 @@ Depending on the peripheral type, you might encounter clashes if you try to cont
 <dpinin pin={1} onChange={console.log} />
 ```
 
-However, it might be completley fine to do this in some cases like reading from the same pin in different places, controlling different aspects of the same peripheral (say, setting whether a stepper motor is enabled and its position). This depends on the peripheral itself and its bridge implementation.
+However, it might be completley fine to do this in some cases like reading from the same pin in different places, controlling different aspects of the same peripheral (say, setting whether a stepper motor is enabled and its position). This depends on the peripheral itself and its bridge implementation. For example, this is just fine within Hertz's ClearCore bridge implementatin:
+
+```tsx
+<motor port={0} enabled={true} />
+   <motor target={{ position: 100 }} />
+</motor>
+```
 
 ## TODO
 

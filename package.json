@@ -27,7 +27,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
-    "llamajet-driver-ts": "file:/home/zigapk/Desktop/llamajet-driver-ts",
+    "llamajet-driver-ts": "file:/home/zigapk/Personal/masters/llamajet-driver-ts",
     "serialport": "^13.0.0"
   },
   "peerDependencies": {
@@ -38,6 +38,7 @@
     "@biomejs/biome": "2.2.5",
     "@types/react": "^19.2.0",
     "@types/react-reconciler": "^0.32.1",
+    "biome": "^0.3.3",
     "ts-node": "^10.9.2",
     "tsdown": "^0.15.6",
     "tsx": "^4.20.6"

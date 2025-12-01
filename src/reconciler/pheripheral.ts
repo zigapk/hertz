@@ -68,6 +68,9 @@ export abstract class BasePeripheral<
 	// Hardware allows us to have a reference to an instance of the hardware we're using.
 	protected readonly hardware: Hardware;
 
+	// Remembers whether the peripheral was already initialized.
+	private initialized = false;
+
 	constructor(
 		props: PeripheralProps<WritableProps, ReadableValues>,
 		hardware: Hardware,
@@ -77,9 +80,24 @@ export abstract class BasePeripheral<
 	}
 
 	/**
+	 * Real init that calls the initPeripheral method and sets the initialized flag.
+	 */
+	async init(): Promise<void> {
+		await this.initPeripheral();
+		this.initialized = true;
+	}
+
+	/**
+	 * Returns whether the peripheral is initialized.
+	 */
+	isInitialized(): boolean {
+		return this.initialized;
+	}
+
+	/**
 	 * Performs the initial one-time setup for the peripheral (e.g., setting pin modes).
 	 */
-	abstract initPeripheral(): Promise<void> | void;
+	abstract initPeripheral(): Promise<void>;
 
 	/**
 	 * Reads the latest values from the physical peripheral.

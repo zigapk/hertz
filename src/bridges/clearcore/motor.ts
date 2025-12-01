@@ -35,9 +35,9 @@ export class Motor
 		this.eStopPin = props.eStopPin;
 	}
 
-	initPeripheral(): void {
+	async initPeripheral(): Promise<void> {
 		if (this.eStopPin) {
-			this.hardware.motorsSetEStopPin(this.eStopPin);
+			await this.hardware.motorsSetEStopPin(this.eStopPin);
 		}
 	}
 
