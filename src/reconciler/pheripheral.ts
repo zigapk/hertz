@@ -71,6 +71,9 @@ export abstract class BasePeripheral<
 	// Remembers whether the peripheral was already initialized.
 	private initialized = false;
 
+	// Remember whether props have already been applied at least once.
+	private appliedProps = false;
+
 	constructor(
 		props: PeripheralProps<WritableProps, ReadableValues>,
 		hardware: Hardware,
@@ -108,17 +111,26 @@ export abstract class BasePeripheral<
 	 * Applys new props to hardware. In other words - it reconciles the new props with the real hardware state.
 	 */
 	async applyNewPropsToHardware(
-		props: PeripheralProps<WritableProps, ReadableValues>,
+		prevProps: PeripheralProps<WritableProps, ReadableValues>,
+		nextProps: PeripheralProps<WritableProps, ReadableValues>,
 	): Promise<void> {
-		const oldProps = this.props;
-		this.props = props;
+		// Check that the peripheral is initialized.
+		if (!this.isInitialized()) {
+			throw new Error("Peripheral is not initialized");
+		}
 
-		const propKeys = Object.keys(props) as Array<keyof WritableProps>;
+		// Remember the new props.
+		this.props = nextProps;
 
-		// TODO: keys here should iterate over an union of propKeys and keys from the old props
-		for (const key of propKeys) {
-			const newValue = props[key];
-			const oldValue = oldProps[key];
+		const prevPropKeys = Object.keys(prevProps) as Array<keyof WritableProps>;
+		const nextPropKeys = Object.keys(this.props) as Array<keyof WritableProps>;
+
+		// We neet to iterate over the union of keys from prevProps and newProps
+		const allKeys = [...new Set([...nextPropKeys, ...prevPropKeys])];
+
+		for (const key of allKeys) {
+			const newValue = this.props[key];
+			const oldValue = prevProps[key];
 
 			const applyMethodName = `apply${
 				(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
@@ -127,29 +139,41 @@ export abstract class BasePeripheral<
 			const applyMethod = (
 				this as unknown as PeripheralLifecycleMethods<WritableProps>
 			)[applyMethodName] as ((value: unknown) => Promise<void>) | undefined;
+			const disownMethodName = `disown${
+				(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
+			}` as keyof DisownMethods<WritableProps>;
 
+			const disownMethod = (this as unknown as DisownMethods<WritableProps>)[
+				disownMethodName
+			] as (() => Promise<void>) | undefined;
+
+			const propDiffersOrFirstApply =
+				!this.appliedProps ||
+				JSON.stringify(oldValue) !== JSON.stringify(newValue);
+
+			// Apply the new value if it differs from previous real-world state
 			if (
 				newValue !== undefined &&
-				JSON.stringify(oldValue) !== JSON.stringify(newValue) &&
+				propDiffersOrFirstApply &&
 				typeof applyMethod === "function"
 			) {
 				await applyMethod.call(this, newValue);
 			}
 
-			if (newValue === undefined) {
-				const disownMethodName = `disown${
-					(key as string).charAt(0).toUpperCase() + (key as string).slice(1)
-				}` as keyof DisownMethods<WritableProps>;
-
-				const disownMethod = (this as unknown as DisownMethods<WritableProps>)[
-					disownMethodName
-				] as (() => Promise<void>) | undefined;
-
+			// Disown the value if the new props do not specify it
+			if (
+				newValue === undefined &&
+				oldValue !== undefined &&
+				typeof disownMethod === "function"
+			) {
 				if (typeof disownMethod === "function") {
 					await disownMethod.call(this);
 				}
 			}
 		}
+
+		// Remember that we applied props at least once.
+		this.appliedProps = true;
 	}
 
 	async desconstructPeripheral(): Promise<void> {

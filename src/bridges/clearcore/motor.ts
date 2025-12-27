@@ -41,14 +41,20 @@ export class Motor
 		}
 	}
 
-	async applyPort() {
-		throw new Error("Changing the port after initialization is not supported.");
+	async applyPort(port: number) {
+		if (port !== this.port) {
+			throw new Error(
+				"Changing the port after initialization is not supported.",
+			);
+		}
 	}
 
-	async applyEStopPin() {
-		throw new Error(
-			"Changing the eStopPin after initialization is not supported.",
-		);
+	async applyEStopPin(pin: number) {
+		if (pin !== this.eStopPin) {
+			throw new Error(
+				"Changing the eStopPin after initialization is not supported.",
+			);
+		}
 	}
 
 	async applyEnabled(enabled: boolean) {
@@ -58,7 +64,8 @@ export class Motor
 			await this.hardware.disableMotors(this.port);
 		}
 	}
-	async dissownEnabled() {
+	async disownEnabled() {
+		await this.hardware.stopMotors(this.port);
 		await this.hardware.disableMotors(this.port);
 	}
 

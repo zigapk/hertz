@@ -22,8 +22,10 @@ const AlternateDirection = () => {
 		<motor
 			enabled={true}
 			port={0}
-			acceleration={100000}
-			targetVelocity={direction === "forward" ? 1000 : -1000}
+			target={{
+				acceleration: 100000,
+				targetVelocity: direction === "forward" ? 10000 : -10000,
+			}}
 			onPositionChange={(position) => console.log(position)}
 		/>
 	);

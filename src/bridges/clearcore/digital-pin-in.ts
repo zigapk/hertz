@@ -31,8 +31,12 @@ export class DPinIn
 		await this.hardware.setPinsMode(PinMode.DigitalInput, this.pin);
 	}
 
-	async applyPin() {
-		throw new Error("Changing the pin after initialization is not supported.");
+	async applyPin(pin: number) {
+		if (pin !== this.pin) {
+			throw new Error(
+				"Changing the pin after initialization is not supported.",
+			);
+		}
 	}
 
 	// Read the single value from the pin

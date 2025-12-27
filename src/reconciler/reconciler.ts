@@ -8,6 +8,7 @@ import {
 } from "react-reconciler/constants";
 import type { AnyPeripheralConstructor, Peripheral } from "./pheripheral";
 import type { EmptyObject } from "./types-utils";
+import { onShutdown } from "node-graceful-shutdown";
 
 // Deferred Signal System
 type Deferred = {
@@ -87,6 +88,10 @@ class ReconcilerState {
 
 	getPheriperalCount(): number {
 		return this.mountedPheriperals.length;
+	}
+
+	getMountedPeripherals(): Peripheral<unknown, object, object>[] {
+		return this.mountedPheriperals;
 	}
 }
 
@@ -188,7 +193,7 @@ export function createReconciler<
 		},
 
 		// Update Phase (Async Update)
-		commitUpdate: (instance, _type, _prevProps, nextProps) => {
+		commitUpdate: (instance, _type, prevProps, nextProps) => {
 			instance.props = nextProps;
 			const id = instance.id;
 			const mySignal = getNodeSignal(id);
@@ -198,6 +203,7 @@ export function createReconciler<
 			const newPromise = mySignal.promise
 				.then(() => {
 					return instance.pheripheralInstance.applyNewPropsToHardware(
+						prevProps,
 						nextProps,
 					);
 				})
@@ -357,6 +363,16 @@ export function createReconciler<
 			i %= l;
 		}
 	};
+
+	const cleanup = async () => {
+		await Promise.all(
+			reconcilerState.getMountedPeripherals().map((p) => {
+				return p.desconstructPeripheral();
+			}),
+		);
+	};
+
+	onShutdown("hertz", cleanup);
 
 	return {
 		render,

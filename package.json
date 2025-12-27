@@ -28,6 +28,7 @@
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "llamajet-driver-ts": "github:llamajet/llamajet-driver-ts",
+    "node-graceful-shutdown": "^1.1.5",
     "serialport": "^13.0.0"
   },
   "peerDependencies": {

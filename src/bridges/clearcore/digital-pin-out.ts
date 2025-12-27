@@ -35,8 +35,12 @@ export class DPinOut
 		});
 	}
 
-	async applyPin() {
-		throw new Error("Changing the pin after initialization is not supported.");
+	async applyPin(pin: number) {
+		if (pin !== this.pin) {
+			throw new Error(
+				"Changing the pin after initialization is not supported.",
+			);
+		}
 	}
 
 	async applyValue(value: boolean) {
