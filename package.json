@@ -14,7 +14,7 @@
       "import": "./dist/index.mjs"
     }
   },
-  "types": "dist/index.d.mts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "example:clearcore-blink": "tsx src/examples/clearcore-blink.tsx",
     "example:clearcore-complex": "tsx src/examples/clearcore-complex.tsx",
