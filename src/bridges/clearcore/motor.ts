@@ -18,13 +18,22 @@ interface MotorProps {
 	target?: MotorTargetProps;
 }
 
+export interface MotorRefData {
+	setHome: () => Promise<void>;
+}
+
 export class Motor
-	extends BasePeripheral<ClearCore, MotorProps, MotorState>
+	extends BasePeripheral<ClearCore, MotorProps, MotorState, MotorRefData>
 	implements PeripheralLifecycleMethods<MotorProps>
 {
 	static readonly tagName = "motor";
 	readonly port: number;
 	readonly eStopPin?: number;
+	refData = {
+		setHome: async () => {
+			await this.hardware.setMotorsHome(this.port);
+		},
+	};
 
 	constructor(
 		props: PeripheralProps<MotorProps, MotorState>,

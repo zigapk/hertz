@@ -54,4 +54,12 @@ async function main() {
 	await runEventLoop();
 }
 
-main();
+main()
+	.then(() => {
+		console.log("Done");
+		process.exit(0);
+	})
+	.catch((err) => {
+		console.error(err);
+		process.exit(1);
+	});

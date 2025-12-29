@@ -1,4 +1,8 @@
+import type { Attributes, PropsWithChildren, RefAttributes } from "react";
 import type { AnyPeripheralConstructor } from "./pheripheral";
+
+// This includes key, ref (generic), and children (as ReactNode)
+type ReactBaseProps<R> = Attributes & RefAttributes<R> & PropsWithChildren;
 
 export type EmptyObject = Record<string, never>;
 
@@ -26,5 +30,5 @@ type Tag<T> = T extends { tagName: infer N } ? N : never;
 
 // biome-ignore lint/suspicious/noExplicitAny: Hardware is not crucial to the type here - this is used mostly for onXYZChange inference.
 export type IntrinsicPeripherals<T extends AnyPeripheralConstructor<any>> = {
-	[K in T as Tag<K>]: Props<K>;
+	[K in T as Tag<K>]: Props<K> & ReactBaseProps<InstanceType<K>["refData"]>;
 };

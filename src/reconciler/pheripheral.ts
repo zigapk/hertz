@@ -1,10 +1,13 @@
+import type { EmptyObject } from "./types-utils";
+
 // A type representing a constructor for any peripheral.
 export type AnyPeripheralConstructor<Hardware> = {
 	new (
 		// biome-ignore lint/suspicious/noExplicitAny: Needs to be ambiguous because we cannot always know the type in advance.
 		props: PeripheralProps<any, any>,
 		hardware: Hardware,
-	): Peripheral<unknown, object, object>;
+		// biome-ignore lint/suspicious/noExplicitAny: We need to have anything accepted as refData here.
+	): Peripheral<unknown, object, object, any>;
 	readonly tagName: string;
 };
 
@@ -58,6 +61,7 @@ export abstract class BasePeripheral<
 	Hardware,
 	WritableProps extends object,
 	ReadableValues extends object,
+	RefData extends object = EmptyObject,
 > {
 	// The current props for the peripheral, including `on...Change` callbacks.
 	protected props: PeripheralProps<WritableProps, ReadableValues>;
@@ -73,6 +77,8 @@ export abstract class BasePeripheral<
 
 	// Remember whether props have already been applied at least once.
 	private appliedProps = false;
+
+	abstract readonly refData: RefData;
 
 	constructor(
 		props: PeripheralProps<WritableProps, ReadableValues>,
@@ -129,6 +135,11 @@ export abstract class BasePeripheral<
 		const allKeys = [...new Set([...nextPropKeys, ...prevPropKeys])];
 
 		for (const key of allKeys) {
+			// Ignore the react internals
+			if (key === "children" || key === "ref" || key === "key") {
+				continue;
+			}
+
 			const newValue = this.props[key];
 			const oldValue = prevProps[key];
 
@@ -248,5 +259,6 @@ export type Peripheral<
 	Hardware,
 	WritableProps extends object,
 	ReadableValues extends object,
-> = BasePeripheral<Hardware, WritableProps, ReadableValues> &
+	RefData extends object = EmptyObject,
+> = BasePeripheral<Hardware, WritableProps, ReadableValues, RefData> &
 	PeripheralLifecycleMethods<WritableProps>;

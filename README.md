@@ -1,6 +1,9 @@
 
 # React Hertz 💡
 
+TODO:
+- error handling
+- test the framework
 
 ![Let a picture speak a thousand words.](docs/assets/blink.gif)
 

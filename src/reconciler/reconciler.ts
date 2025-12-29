@@ -1,3 +1,4 @@
+import { onShutdown } from "node-graceful-shutdown";
 import { createContext } from "react";
 import type { HostConfig, ReactContext } from "react-reconciler";
 import Reconciler from "react-reconciler";
@@ -8,7 +9,6 @@ import {
 } from "react-reconciler/constants";
 import type { AnyPeripheralConstructor, Peripheral } from "./pheripheral";
 import type { EmptyObject } from "./types-utils";
-import { onShutdown } from "node-graceful-shutdown";
 
 // Deferred Signal System
 type Deferred = {
@@ -116,7 +116,7 @@ export function createReconciler<
 		DOMNode<TagName, Props>,
 		never,
 		never,
-		null,
+		object,
 		EmptyObject,
 		never,
 		number,
@@ -231,6 +231,7 @@ export function createReconciler<
 
 			// Async Destruction
 			// Chain onto whatever is currently happening (init or update)
+			// biome-ignore lint/nursery/noFloatingPromises: no need to await here
 			mySignal.promise
 				.then(() => {
 					return child.pheripheralInstance.desconstructPeripheral();
@@ -248,6 +249,7 @@ export function createReconciler<
 			const id = child.id;
 			const mySignal = getNodeSignal(id);
 
+			// biome-ignore lint/nursery/noFloatingPromises: no need to await here
 			mySignal.promise
 				.then(() => {
 					return child.pheripheralInstance.desconstructPeripheral();
@@ -276,9 +278,8 @@ export function createReconciler<
 			// Note: insertBefore doesn't trigger commitMount again,
 			// so the async lifecycle is handled by the original creation.
 		},
-
+		getPublicInstance: (instance) => instance.pheripheralInstance.refData,
 		// Boilerplate / Unsupported
-		getPublicInstance: () => null,
 		getRootHostContext: () => ({}),
 		getChildHostContext: (parentHostContext) => parentHostContext,
 		shouldSetTextContent: () => false,

@@ -22,6 +22,8 @@ export class DPinIn
 	static readonly tagName = "dpinin";
 	readonly pin: number;
 
+	refData = {};
+
 	constructor(props: DPinInProps, hardware: ClearCore) {
 		super(props, hardware);
 		this.pin = props.pin;
