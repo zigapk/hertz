@@ -6,7 +6,7 @@ import {
 } from "@/reconciler/pheripheral";
 
 // The motor can be in either of
-type MotorTargetProps =
+export type MotorTargetProps =
 	| { targetPosition: number; targetVelocity: number; acceleration: number } // Target position movement
 	| { targetVelocity: number; targetPosition?: never; acceleration: number } // Target velocity movement
 	| { targetPosition?: never; targetVelocity?: never; acceleration?: never }; // None of those
