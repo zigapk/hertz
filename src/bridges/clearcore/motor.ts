@@ -131,7 +131,7 @@ export class Motor
 		}
 	}
 
-	async dissownTarget() {
+	async disownTarget() {
 		await this.hardware.stopMotors(this.port);
 	}
 
