@@ -84,7 +84,7 @@ export class Motor
 		const isVelocityMovement =
 			acceleration != null && targetVelocity != null && targetPosition == null;
 		const isPositionMovement =
-			acceleration == null && targetVelocity == null && targetPosition != null;
+			acceleration != null && targetVelocity != null && targetPosition != null;
 
 		// If none of the types are set, there is something wrong
 		if (!isVelocityMovement && !isPositionMovement) {
@@ -104,7 +104,7 @@ export class Motor
 			return;
 		}
 
-		if (isVelocityMovement && targetVelocity > 0) {
+		if (isVelocityMovement && targetVelocity !== 0) {
 			await this.hardware.setMotorsVelocity({
 				id: this.port,
 				velocity: targetVelocity,
