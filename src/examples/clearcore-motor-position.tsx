@@ -21,9 +21,11 @@ const TraverseRandomPositions = () => {
 		<motor
 			enabled={true}
 			port={0}
-			acceleration={100000}
-			targetVelocity={5000}
-			targetPosition={target}
+			target={{
+				targetPosition: target,
+				acceleration: 100000,
+				targetVelocity: 5000,
+			}}
 			onPositionChange={(position) =>
 				process.stdout.write(
 					`\rPosition: ${position.toString().padStart(5)}  Target: ${target.toString().padStart(5)}`.padEnd(
@@ -58,12 +60,4 @@ async function main() {
 	await runEventLoop();
 }
 
-main()
-	.then(() => {
-		console.log("Done");
-		process.exit(0);
-	})
-	.catch((err) => {
-		console.error(err);
-		process.exit(1);
-	});
+void main();

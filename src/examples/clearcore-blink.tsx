@@ -40,4 +40,4 @@ async function main() {
 	await runEventLoop();
 }
 
-main();
+void main();
