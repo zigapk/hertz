@@ -12,6 +12,7 @@
 		"declaration": true,
 		"newLine": "lf",
 		"stripInternal": true,
+		"experimentalDecorators": true,
 		"strict": true,
 		"noImplicitReturns": true,
 		"noImplicitOverride": true,

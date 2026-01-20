@@ -1,7 +1,7 @@
 import { ClearCore } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
-import { clearCorePeripherals } from "@/bridges";
+import { CCMotor, clearCorePeripherals } from "@/bridges";
 import { createReconciler } from "@/reconciler";
 
 // Blink simply toggles the value of PIN 0 every second.
@@ -19,7 +19,7 @@ const AlternateDirection = () => {
 	}, []);
 
 	return (
-		<motor
+		<CCMotor
 			enabled={true}
 			port={0}
 			target={{

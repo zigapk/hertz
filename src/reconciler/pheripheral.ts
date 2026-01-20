@@ -1,5 +1,54 @@
 import type { EmptyObject } from "./types-utils";
 
+/**
+ * Decorator that catches errors in async methods and calls the onError callback.
+ * Use this on any BasePeripheral method that should propagate errors to the error boundary.
+ *
+ * @example
+ * ```typescript
+ * @catchPeripheralErrors
+ * async queryForChanges(): Promise<void> {
+ *   // ... method implementation
+ * }
+ * ```
+ */
+function catchPeripheralErrors(
+	// biome-ignore lint/suspicious/noExplicitAny: Decorators require any for target parameter - this is the class prototype
+	_target: any,
+	_propertyKey: string,
+	descriptor: PropertyDescriptor,
+): PropertyDescriptor {
+	const originalMethod = descriptor.value as (
+		// biome-ignore lint/suspicious/noExplicitAny: Need any for variadic arguments in wrapped method
+		...args: any[]
+	) => Promise<unknown>;
+
+	descriptor.value = async function (
+		this: BasePeripheral<unknown, object, object, object>,
+		// biome-ignore lint/suspicious/noExplicitAny: Need any for variadic arguments to preserve method signature
+		...args: any[]
+	) {
+		try {
+			return await originalMethod.apply(this, args);
+		} catch (error) {
+			// Convert to Error if it's not already
+			const err = error instanceof Error ? error : new Error(String(error));
+
+			// Call the onError callback to propagate to React error boundary
+			this.props.onError(err);
+
+			// Don't re-throw - let the error boundary handle it via setState
+			return undefined;
+		}
+	};
+
+	return descriptor;
+}
+
+// ============================================================================
+// Peripheral Types
+// ============================================================================
+
 // A type representing a constructor for any peripheral.
 export type AnyPeripheralConstructor<Hardware> = {
 	new (
@@ -52,10 +101,16 @@ type DisownMethods<T extends object> = {
 export type PeripheralLifecycleMethods<T extends object> = ApplyMethods<T> &
 	DisownMethods<T>;
 
+export type PeripheralOnErrorCallbackProps = {
+	onError: (error: Error) => void;
+};
+
 /**
- * Combines a peripheral's base props with the auto-generated OnChangeProps.
+ * Combines a peripheral's base props with the auto-generated OnChangeProps and on-error callback.
  */
-export type PeripheralProps<P, V extends object> = P & OnChangeProps<V>;
+export type PeripheralProps<P, V extends object> = P &
+	OnChangeProps<V> &
+	PeripheralOnErrorCallbackProps;
 
 export abstract class BasePeripheral<
 	Hardware,
@@ -91,6 +146,7 @@ export abstract class BasePeripheral<
 	/**
 	 * Real init that calls the initPeripheral method and sets the initialized flag.
 	 */
+	@catchPeripheralErrors
 	async init(): Promise<void> {
 		await this.initPeripheral();
 		this.initialized = true;
@@ -116,6 +172,7 @@ export abstract class BasePeripheral<
 	/**
 	 * Applys new props to hardware. In other words - it reconciles the new props with the real hardware state.
 	 */
+	@catchPeripheralErrors
 	async applyNewPropsToHardware(
 		prevProps: PeripheralProps<WritableProps, ReadableValues>,
 		nextProps: PeripheralProps<WritableProps, ReadableValues>,
@@ -187,6 +244,7 @@ export abstract class BasePeripheral<
 		this.appliedProps = true;
 	}
 
+	@catchPeripheralErrors
 	async desconstructPeripheral(): Promise<void> {
 		const propKeys = Object.keys(this.props) as Array<keyof WritableProps>;
 
@@ -209,6 +267,7 @@ export abstract class BasePeripheral<
 	 * Polls the peripheral for new values and fires `on...Change` callbacks.
 	 * Fires callbacks for all values on the first run, and only for changed values on subsequent runs.
 	 */
+	@catchPeripheralErrors
 	async queryForChanges(): Promise<void> {
 		const newValues = await this.readValuesFromHardware();
 

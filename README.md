@@ -2,7 +2,13 @@
 # React Hertz 💡
 
 TODO:
-- error handling
+- add hono
+- get current state (telemetry)
+- react dev tools
+- error boundaries
+    - onChange
+    - on render
+    - setTimeout
 - test the framework
 
 ![Let a picture speak a thousand words.](docs/assets/blink.gif)

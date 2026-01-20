@@ -1,7 +1,7 @@
 import { ClearCore } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
-import { clearCorePeripherals } from "@/bridges";
+import { CCMotor, clearCorePeripherals } from "@/bridges";
 import { createReconciler } from "@/reconciler";
 
 // Traverses random positions using the motor.
@@ -18,7 +18,7 @@ const TraverseRandomPositions = () => {
 	}, []);
 
 	return (
-		<motor
+		<CCMotor
 			enabled={true}
 			port={0}
 			target={{

@@ -1,7 +1,7 @@
 import { ClearCore } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
-import { clearCorePeripherals } from "@/bridges";
+import { CCDPinOut, clearCorePeripherals } from "@/bridges";
 import { createReconciler } from "@/reconciler";
 
 // Blink simply toggles the value of PIN 0 every second.
@@ -16,7 +16,7 @@ const Blink = () => {
 		return () => clearInterval(interval);
 	}, []);
 
-	return <dpinout pin={0} value={value} />;
+	return <CCDPinOut pin={3} value={value} />;
 };
 
 async function main() {

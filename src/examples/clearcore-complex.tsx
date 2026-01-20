@@ -1,7 +1,7 @@
 import { ClearCore } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
-import { clearCorePeripherals } from "@/bridges";
+import { CCDPinIn, CCDPinOut, clearCorePeripherals } from "@/bridges";
 import { createReconciler } from "@/reconciler";
 
 // Follow makes sure PIN 2 has the same value as PIN 1.
@@ -10,8 +10,8 @@ const Follow = () => {
 
 	return (
 		<>
-			<dpinin pin={1} onValueChange={(value) => setValue(value)} />
-			<dpinout pin={2} value={value} />
+			<CCDPinIn pin={1} onValueChange={(value) => setValue(value)} />
+			<CCDPinOut pin={2} value={value} />
 		</>
 	);
 };
@@ -28,7 +28,7 @@ const Blink = () => {
 		return () => clearInterval(interval);
 	}, []);
 
-	return <dpinout pin={0} value={value} />;
+	return <CCDPinOut pin={0} value={value} />;
 };
 
 // Executes both follow and blink at the same time.

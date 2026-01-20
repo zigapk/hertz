@@ -202,9 +202,14 @@ export function createReconciler<
 			// We update the promise in the map so subsequent updates wait for this one.
 			const newPromise = mySignal.promise
 				.then(() => {
+					// Props include onError callback at runtime, type system just doesn't know it
 					return instance.pheripheralInstance.applyNewPropsToHardware(
-						prevProps,
-						nextProps,
+						prevProps as Parameters<
+							typeof instance.pheripheralInstance.applyNewPropsToHardware
+						>[0],
+						nextProps as Parameters<
+							typeof instance.pheripheralInstance.applyNewPropsToHardware
+						>[1],
 					);
 				})
 				.catch((err) => {
@@ -330,14 +335,23 @@ export function createReconciler<
 	const reconciler = Reconciler(hostConfig);
 
 	const container: HostContainer<TagName> = { head: null };
-	const root = reconciler.createContainer(
+	// Type definitions are outdated (v0.32.1) but runtime is v0.33.0
+	// The runtime expects onUncaughtError and onCaughtError as separate parameters
+	// biome-ignore lint/suspicious/noExplicitAny: Type definitions don't match runtime API
+	const root = (reconciler.createContainer as any)(
 		container,
 		ConcurrentRoot,
 		null,
 		false,
 		null,
 		"",
-		(error) => console.error(error),
+		() => {
+			// onUncaughtError - silently ignore, let the application handle it
+		},
+		() => {
+			// onCaughtError - silently ignore, error boundaries will handle it
+		},
+		null,
 		null,
 	);
 

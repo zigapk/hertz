@@ -1,4 +1,5 @@
 import type { ClearCore, MotorState } from "llamajet-driver-ts";
+import { createHigherLevelComponent } from "@/reconciler/higher-level-component";
 import {
 	BasePeripheral,
 	type PeripheralLifecycleMethods,
@@ -22,11 +23,11 @@ export interface MotorRefData {
 	setHome: () => Promise<void>;
 }
 
-export class Motor
+export class CCMotorPeripheral
 	extends BasePeripheral<ClearCore, MotorProps, MotorState, MotorRefData>
 	implements PeripheralLifecycleMethods<MotorProps>
 {
-	static readonly tagName = "motor";
+	static readonly tagName = "ccmotor";
 	readonly port: number;
 	readonly eStopPin?: number;
 	refData = {
@@ -141,3 +142,5 @@ export class Motor
 		return motorState;
 	}
 }
+
+export const CCMotor = createHigherLevelComponent(CCMotorPeripheral);

@@ -1,5 +1,6 @@
 import type { ClearCore } from "llamajet-driver-ts";
 import { PinMode } from "llamajet-driver-ts";
+import { createHigherLevelComponent } from "@/reconciler/higher-level-component";
 import {
 	BasePeripheral,
 	type PeripheralLifecycleMethods,
@@ -15,11 +16,11 @@ interface DPinOutBaseProps {
 // Base props here equal PheripheralProps (because EmptyObject generates not onXYZChange callbacks), but we do this anyway for the sake of consistency.
 export type DPinOutProps = PeripheralProps<DPinOutBaseProps, EmptyObject>;
 
-export class DPinOut
+export class CCDPinOutPeripheral
 	extends BasePeripheral<ClearCore, DPinOutProps, EmptyObject>
 	implements PeripheralLifecycleMethods<DPinOutBaseProps>
 {
-	static readonly tagName = "dpinout";
+	static readonly tagName = "ccdpinout";
 	readonly pin: number;
 
 	refData = {};
@@ -63,3 +64,5 @@ export class DPinOut
 		return {};
 	}
 }
+
+export const CCDPinOut = createHigherLevelComponent(CCDPinOutPeripheral);

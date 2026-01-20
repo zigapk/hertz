@@ -19,6 +19,7 @@
     "example:clearcore-complex": "tsx src/examples/clearcore-complex.tsx",
     "example:clearcore-motor-velocity": "tsx src/examples/clearcore-motor-velocity.tsx",
     "example:clearcore-motor-position": "tsx src/examples/clearcore-motor-position.tsx",
+    "example:clearcore-error-boundary": "tsx src/examples/clearcore-error-boundary.tsx",
     "build": "tsdown",
     "prepare": "pnpm run build"
   },
@@ -29,6 +30,7 @@
   "dependencies": {
     "llamajet-driver-ts": "github:llamajet/llamajet-driver-ts",
     "node-graceful-shutdown": "^1.1.5",
+    "react-error-boundary": "^6.0.3",
     "serialport": "^13.0.0"
   },
   "peerDependencies": {

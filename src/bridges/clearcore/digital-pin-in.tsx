@@ -1,4 +1,5 @@
 import { type ClearCore, PinMode } from "llamajet-driver-ts";
+import { createHigherLevelComponent } from "@/reconciler/higher-level-component";
 import {
 	BasePeripheral,
 	type PeripheralLifecycleMethods,
@@ -15,11 +16,11 @@ interface DPinInValues {
 
 export type DPinInProps = PeripheralProps<DPinInBaseProps, DPinInValues>;
 
-export class DPinIn
+export class CCDPinInPeripheral
 	extends BasePeripheral<ClearCore, DPinInBaseProps, DPinInValues>
 	implements PeripheralLifecycleMethods<DPinInBaseProps>
 {
-	static readonly tagName = "dpinin";
+	static readonly tagName = "ccdpinin";
 	readonly pin: number;
 
 	refData = {};
@@ -47,3 +48,4 @@ export class DPinIn
 		return { value: values[0] };
 	}
 }
+export const CCDPinIn = createHigherLevelComponent(CCDPinInPeripheral);
