@@ -345,11 +345,13 @@ export function createReconciler<
 		false,
 		null,
 		"",
-		() => {
-			// onUncaughtError - silently ignore, let the application handle it
+		(e: Error) => {
+			// Re-throw the error to the top level
+			throw e;
 		},
-		() => {
-			// onCaughtError - silently ignore, error boundaries will handle it
+		(e: Error) => {
+			// Re-throw the error to the top level
+			throw e;
 		},
 		null,
 		null,
