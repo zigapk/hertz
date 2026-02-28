@@ -25,7 +25,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts=false
+
+      - name: Rebuild Git dependency artifacts
+        run: pnpm rebuild llamajet-driver-ts
 
       - name: Typecheck
         run: pnpm exec tsc --noEmit
