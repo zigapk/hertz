@@ -149,7 +149,7 @@ export function createTelemetryStore<TState extends object>(
 			}
 
 			return nextState;
-		});
+		}, true);
 	};
 
 	// Deletes a nested telemetry value.
@@ -162,7 +162,7 @@ export function createTelemetryStore<TState extends object>(
 			}
 
 			return nextState;
-		});
+		}, true);
 	};
 
 	// Subscribes to a selected slice with optional custom equality.

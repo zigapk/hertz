@@ -46,7 +46,7 @@ export class CCMotorPeripheral
 	}
 
 	async initPeripheral(): Promise<void> {
-		if (this.eStopPin) {
+		if (this.eStopPin !== undefined) {
 			await this.hardware.motorsSetEStopPin(this.eStopPin);
 		}
 	}
