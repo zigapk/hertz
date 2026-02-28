@@ -1,155 +1,195 @@
-
 # React Hertz 💡
-
-TODO:
-- add hono
-- react dev tools
-- error boundaries
-    - onChange
-    - on render
-    - setTimeout
-- test the framework
 
 ![Let a picture speak a thousand words.](docs/assets/blink.gif)
 
 Hertz is a React framework (or reconciler/renderer) for driving hardware peripherals. **It projects the internal state of your React app to the physical world** instead of a [screen](https://www.npmjs.com/package/react-dom), [video](https://www.remotion.dev/) or [terminal](https://github.com/vadimdemedes/ink).
 
-**NOTE**: This is very much a work in progress. The docs are lacking, the API is not stable and tests are largely non-existent. However, you are very much welcome to play around with the project.
+**NOTE**: This is still a work in progress. APIs may change and coverage is incomplete, but the project is usable for experimentation.
 
-## Quick start
+## Why use this reconciler for robots
 
-You'll need some hardware to control. For now, Hertz supports the most basic peripherals for:
-- [ClearCore](https://clearcore.ai/) - [docs](./src/bridges/clearcore/README.md),
-- [Arduino](https://www.arduino.cc/) - [docs](./src/bridges/arduino/README.md) or
-- [Raspberry Pi](https://www.raspberrypi.com/) - [docs](./src/bridges/raspberry/README.md).
+Hertz gives you React ergonomics for hardware control while keeping execution in a Node runtime.
 
-However, it is very easy to write a bridge for your own hardware. See [Bring your own hardware](docs/bring-your-own-hardware.md) for more information.
+- Declarative hardware tree: describe target hardware state as components and props.
+- Built-in lifecycle mapping: mount/update/unmount map to peripheral init/apply/disown methods.
+- Parent-first initialization: parent peripherals initialize before children.
+- Poll-driven input updates: readable hardware values are queried and surfaced via `on...Change` callbacks.
+- Error propagation through React boundaries: hardware/runtime errors bubble to standard React error boundaries.
+- External telemetry store: publish selected robot state for CLIs, dashboards, and monitoring.
 
-Hertz needs to run **within a Node.js-like environment**. This means that:
-1. Rasppbery Pi can control the hardware on the defice itself.
-2. Arduino and other controlers incapable of running Node need to be controlled from a computer (for example using a serial connection).
-3. You cannot run it in a browser.
-4. There appears to be no reason why Hertz would be incompatible with Deno or Bun, but we did not test this as of yet.
+## What this repository provides
 
-### Project Setup and Installation
-We suggest starting with a typescript project within node and using `tsx` to run the code. Then, install Hertz (only installation from GitHub is supported ATM):
+Hertz is primarily a framework for building hardware reconcilers with React. This repository currently includes:
 
-```
+- the reconciler/runtime,
+- telemetry utilities for publishing robot state outside React,
+- a working ClearCore bridge and examples.
+
+## Bridge status
+
+| Bridge | Status | Notes |
+| --- | --- | --- |
+| ClearCore | Available | Active example bridge in `src/bridges/clearcore` |
+| Arduino | Planned | Not implemented yet |
+| Raspberry Pi | Planned | Not implemented yet |
+
+See bridge-specific docs:
+
+- ClearCore: `src/bridges/clearcore/README.md`
+- Arduino (planned): `src/bridges/arduino/README.md`
+- Raspberry Pi (planned): `src/bridges/raspberry/README.md`
+- Bring your own hardware: `docs/bring-your-own-hardware.md`
+
+## Runtime model
+
+Hertz runs in a Node.js-like runtime, not in a browser.
+
+- `Node.js` is the primary target.
+- `Bun`/`Deno` might work but are not officially tested yet.
+- Devices that cannot run Node directly (for example microcontrollers) are controlled from a host process over a transport such as serial.
+
+## Quick start (ClearCore)
+
+1. Install dependencies in your project:
+
+```bash
 pnpm add react github:zigapk/hertz
-pnpm add serialport # Only if you need to communicate with hardware over a serial connection.
+pnpm add serialport
+pnpm add llamajet-driver-ts
 ```
 
-Depending on your settings and package manager, you might also need to run `pnpm approve-builds` or similar.
+2. Flash ClearCore firmware from `src/bridges/clearcore/firmware/firmware.ino`.
 
-### Writing a program
-
-This starter program works on a Raspberry Pi and makes GPIO 17 pin blink (toggle from low to high every second):
+3. Create the most basic program (blink one digital output pin):
 
 ```tsx
-# TODO: needs rpi bridge to be implemented first
+import { ClearCore } from "llamajet-driver-ts";
+import { useEffect, useState } from "react";
+import { SerialPort } from "serialport";
+import { CCDPinOut, clearCorePeripherals, createReconciler } from "hertz";
+
+const Blink = () => {
+	const [value, setValue] = useState(false);
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setValue((current) => !current);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, []);
+
+	return <CCDPinOut pin={3} value={value} />;
+};
+
+async function main() {
+	const clearcore = new ClearCore(
+		new SerialPort({
+			path: "/dev/ttyACM0",
+			baudRate: 115200,
+		}),
+	);
+
+	await clearcore.connect();
+
+	const { render, runEventLoop } = createReconciler(
+		clearCorePeripherals,
+		clearcore,
+	);
+
+	render(<Blink />);
+	await runEventLoop();
+}
+
+void main();
 ```
 
-## Why use React to drive hardware?
+4. Use one of the richer examples as a next step:
 
-TODO: address the questions below:
-- why not (the leds in amoled example)
-- clean code & safety
-  - ease of programming
-  - wrapping whole parts of tree in guards
-- ecosystem (queries, ability to mount router etc)
-- connecting web and hardware developers
+- `src/examples/clearcore-blink.tsx`
+- `src/examples/clearcore-complex.tsx`
+- `src/examples/clearcore-motor-position.tsx`
+- `src/examples/clearcore-motor-velocity.tsx`
+- `src/examples/clearcore-error-boundary.tsx`
+- `src/examples/clearcore-blink-with-telemetry.tsx`
 
-## Important Concepts
+The ClearCore bridge communicates over serial through `llamajet-driver-ts`, which expects the firmware protocol implemented by `firmware.ino`.
 
-Hertz has a few gotchas that we'd like to put forth here:
+## Error handling and propagation
 
-### Peripherals are created and updated from the root of the tree to the leaves
-This means that if you put component B inside component A, A is guaranteed to have been initialized and updated its props to the latest state before the same happens for B.
+Hertz peripherals are wrapped by higher-level React components (`createHigherLevelComponent`) that propagate peripheral errors into the React tree:
+
+1. Peripheral lifecycle/read methods catch errors.
+2. They call an internal `onError` callback.
+3. The wrapper stores the error in state and throws it on the next render.
+4. A React `ErrorBoundary` above the peripheral catches it.
+
+That means you can use standard React error boundaries to isolate failing robot subtrees and render safe fallbacks.
+
 ```tsx
-<A prop1={value}>
-    <B prop2={value} />
-</A>
+import { ErrorBoundary } from "react-error-boundary";
+import { CCDPinIn, CCDPinOut } from "hertz";
+
+const FaultyPeripheral = () => {
+	return (
+		<>
+			<CCDPinOut pin={0} value={true} />
+			<CCDPinIn
+				pin={1}
+				onValueChange={(value) => {
+					if (value) {
+						throw new Error("Pin 1 is HIGH");
+					}
+				}}
+			/>
+		</>
+	);
+};
+
+const Fallback = (_props: { resetErrorBoundary: () => void }) => {
+	return <CCDPinOut pin={2} value={true} />;
+};
+
+const Program = () => {
+	return (
+		<ErrorBoundary FallbackComponent={Fallback}>
+			<FaultyPeripheral />
+		</ErrorBoundary>
+	);
+};
 ```
 
-### Peripherals might clash with each other
-Depending on the peripheral type, you might encounter clashes if you try to control the same physical peripheral from multiple places in the React tree. This is no different from what happens if you overwrite a pin in a regular program (say C), but let's look at two examples nonetheless.
-
-**Example 1**: Clashing and overwriting digital pins will result in one of them overriding the other.
-```tsx
-<dpinout pin={0} value={true} />
-<dpinout pin={0} value={false} />
-```
-
-**Example 2**: Setting different pin modes might lead to hardware damage depending on the circuit connected to the pin.
-```tsx
-<dpinout pin={1} value={true} />
-<dpinin pin={1} onChange={console.log} />
-```
-
-However, it might be completley fine to do this in some cases like reading from the same pin in different places, controlling different aspects of the same peripheral (say, setting whether a stepper motor is enabled and its position). This depends on the peripheral itself and its bridge implementation. For example, this is just fine within Hertz's ClearCore bridge implementatin:
-
-```tsx
-<motor port={0} enabled={true} />
-   <motor target={{ position: 100 }} />
-</motor>
-```
+For a complete runnable example, see `src/examples/clearcore-error-boundary.tsx`.
 
 ## Telemetry (reading robot state outside React)
 
-Telemetry lets you project selected React state into an external store so that non-React code can observe it (CLI status, dashboards, logs, safety monitors, etc.).
-
-### Why use telemetry?
-
-- Read robot state from outside the React component tree.
-- Subscribe to specific values without coupling to component internals.
-- Keep one stable state contract for operators, monitoring tools, or remote UIs.
-
-### How it works
-
-1. Create a telemetry store with a typed state shape.
-2. Wrap your app in `RobotTelemetryProvider`.
-3. Call `useTelemetry` inside components to publish state at a tuple path.
-4. Subscribe externally using `subscribe` or `subscribeSelector`.
+Telemetry lets you project selected React state into an external store so non-React code can observe it (CLI, dashboards, logs, safety monitors).
 
 ```tsx
 type Telemetry = {
-    blink: {
-        phase: "on" | "off";
-        toggles: number;
-    };
+	blink: {
+		phase: "on" | "off";
+		toggles: number;
+	};
 };
 
 const telemetry = createTelemetryStore<Telemetry>({
-    blink: { phase: "off", toggles: 0 },
+	blink: { phase: "off", toggles: 0 },
 });
 
 useTelemetry<Telemetry, ["blink"]>(["blink"], {
-    phase: value ? "on" : "off",
-    toggles,
+	phase: value ? "on" : "off",
+	toggles,
 });
 
 telemetry.subscribeSelector(
-    (snapshot) => snapshot.blink.phase,
-    (next, previous) => console.log(`Phase changed: ${previous} -> ${next}`),
+	(snapshot) => snapshot.blink.phase,
+	(next, previous) => console.log(`Phase changed: ${previous} -> ${next}`),
 );
 ```
 
+See `src/examples/clearcore-blink-with-telemetry.tsx` for an end-to-end example.
 
-See `src/examples/clearcore-blink-with-telemetry.tsx` for a full end-to-end example.
+## Safety and warranty
 
-
-## TODO
-
-TODO:
-- docs
-- add arduino and clearcore bridges
-- add ci
-- expose this as a package installable from github
-- event loop should allow for more controll
-- destruct peripherals
-
-
-
-## Safety and Warranty
-
-This software is designed to interface with and control physical hardware. Therefore, there is an inherent risk of damage to connected equipment and potential for personal injury. By using this software, you acknowledge and accept full responsibility for any such damage or injury. The creators and contributors of this project shall not be held liable for any hardware damage, data loss, personal injury, or other consequences resulting from the use of this software. Use it at your own risk.
+This software controls physical hardware. Misconfiguration can damage equipment or cause injury. By using Hertz, you accept responsibility for safe setup, safe operation, and validation on your target hardware. The project maintainers are not liable for hardware damage, data loss, or personal injury resulting from use of this software.
