@@ -45,6 +45,13 @@
     "@types/react-reconciler": "^0.32.1",
     "ts-node": "^10.9.2",
     "tsdown": "^0.15.6",
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+"pnpm": {
+    "onlyBuiltDependencies": [
+      "llamajet-driver-ts"
+    ]
   }
+
 }
