@@ -56,7 +56,7 @@ export interface DOMNode<
 }
 
 interface HostContainer<TagName extends string> {
-	head: DOMNode<TagName, Props> | null;
+	children: DOMNode<TagName, Props>[];
 }
 
 class ReconcilerState {
@@ -249,8 +249,8 @@ export function createReconciler<
 		},
 
 		removeChildFromContainer: (container, child) => {
-			// Same logic as removeChild, but for root
-			container.head = null;
+			// Remove from container's children array
+			container.children = container.children.filter((c) => c !== child);
 			const id = child.id;
 			const mySignal = getNodeSignal(id);
 
@@ -275,13 +275,17 @@ export function createReconciler<
 			parent.children.push(child);
 		},
 		appendChildToContainer: (container, child) => {
-			container.head = child;
+			container.children.push(child);
 		},
 		insertBefore: (parent, child, beforeChild) => {
 			child.parent = parent;
 			parent.children.splice(parent.children.indexOf(beforeChild), 0, child);
 			// Note: insertBefore doesn't trigger commitMount again,
 			// so the async lifecycle is handled by the original creation.
+		},
+		insertInContainerBefore: (container, child, beforeChild) => {
+			const index = container.children.indexOf(beforeChild);
+			container.children.splice(index, 0, child);
 		},
 		getPublicInstance: (instance) => instance.pheripheralInstance.refData,
 		// Boilerplate / Unsupported
@@ -300,7 +304,7 @@ export function createReconciler<
 		commitTextUpdate: () => {},
 		preparePortalMount: () => {},
 		clearContainer: (container) => {
-			container.head = null;
+			container.children = [];
 		},
 		getInstanceFromNode: () => null,
 		beforeActiveInstanceBlur: () => {},
@@ -334,7 +338,7 @@ export function createReconciler<
 
 	const reconciler = Reconciler(hostConfig);
 
-	const container: HostContainer<TagName> = { head: null };
+	const container: HostContainer<TagName> = { children: [] };
 	// Type definitions are outdated (v0.32.1) but runtime is v0.33.0
 	// The runtime expects onUncaughtError and onCaughtError as separate parameters
 	// biome-ignore lint/suspicious/noExplicitAny: Type definitions don't match runtime API

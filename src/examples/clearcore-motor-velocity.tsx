@@ -1,4 +1,4 @@
-import { ClearCore } from "llamajet-driver-ts";
+import { ClearCore, HLFBState } from "llamajet-driver-ts";
 import { useEffect, useState } from "react";
 import { SerialPort } from "serialport";
 import { CCMotor, clearCorePeripherals } from "@/bridges";
@@ -21,12 +21,24 @@ const AlternateDirection = () => {
 	return (
 		<CCMotor
 			enabled={true}
-			port={0}
+			port={1}
 			target={{
 				acceleration: 100000,
-				targetVelocity: direction === "forward" ? 10000 : -10000,
+				targetVelocity: direction === "forward" ? 100 : -100,
 			}}
 			onPositionChange={(position) => console.log(position)}
+			onHlfbStateChange={(hlfbState: HLFBState, isInitialRead) => {
+				// HLFBState can be anything on initial read, so we ignore it the first time.
+				if (isInitialRead) {
+					return;
+				}
+
+				// Afterwards, the motor should be enabled and HLFBState should be asserted all the time.
+				// Otherwise we assume that the motor exceeded its torque limit.
+				if (hlfbState !== HLFBState.Asserted) {
+					throw new Error(`Motor exceeded its torque limit.`);
+				}
+			}}
 		/>
 	);
 };
