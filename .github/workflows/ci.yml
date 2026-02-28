@@ -28,10 +28,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
 
       - name: Lint
-        run: npx biome check
+        run: pnpm exec biome check
 
       - name: Build
         run: pnpm build
