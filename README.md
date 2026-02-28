@@ -3,7 +3,6 @@
 
 TODO:
 - add hono
-- get current state (telemetry)
 - react dev tools
 - error boundaries
     - onChange
@@ -94,6 +93,50 @@ However, it might be completley fine to do this in some cases like reading from 
    <motor target={{ position: 100 }} />
 </motor>
 ```
+
+## Telemetry (reading robot state outside React)
+
+Telemetry lets you project selected React state into an external store so that non-React code can observe it (CLI status, dashboards, logs, safety monitors, etc.).
+
+### Why use telemetry?
+
+- Read robot state from outside the React component tree.
+- Subscribe to specific values without coupling to component internals.
+- Keep one stable state contract for operators, monitoring tools, or remote UIs.
+
+### How it works
+
+1. Create a telemetry store with a typed state shape.
+2. Wrap your app in `RobotTelemetryProvider`.
+3. Call `useTelemetry` inside components to publish state at a tuple path.
+4. Subscribe externally using `subscribe` or `subscribeSelector`.
+
+```tsx
+type Telemetry = {
+    blink: {
+        phase: "on" | "off";
+        toggles: number;
+    };
+};
+
+const telemetry = createTelemetryStore<Telemetry>({
+    blink: { phase: "off", toggles: 0 },
+});
+
+useTelemetry<Telemetry, ["blink"]>(["blink"], {
+    phase: value ? "on" : "off",
+    toggles,
+});
+
+telemetry.subscribeSelector(
+    (snapshot) => snapshot.blink.phase,
+    (next, previous) => console.log(`Phase changed: ${previous} -> ${next}`),
+);
+```
+
+
+See `src/examples/clearcore-blink-with-telemetry.tsx` for a full end-to-end example.
+
 
 ## TODO
 
