@@ -10,7 +10,7 @@ importers:
     dependencies:
       llamajet-driver-ts:
         specifier: github:llamajet/llamajet-driver-ts
-        version: https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/bc46f61b1c16e9e9f5ccfb9fd96f60c4956bb0df
+        version: https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/7d293ec56520c3f9a8be00ec722546619e8e85b1
       node-graceful-shutdown:
         specifier: ^1.1.5
         version: 1.1.5
@@ -795,8 +795,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  llamajet-driver-ts@https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/bc46f61b1c16e9e9f5ccfb9fd96f60c4956bb0df:
-    resolution: {tarball: https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/bc46f61b1c16e9e9f5ccfb9fd96f60c4956bb0df}
+  llamajet-driver-ts@https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/7d293ec56520c3f9a8be00ec722546619e8e85b1:
+    resolution: {tarball: https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/7d293ec56520c3f9a8be00ec722546619e8e85b1}
     version: 1.0.0
 
   loupe@3.2.1:
@@ -1677,7 +1677,7 @@ snapshots:
 
   jsesc@3.1.0: {}
 
-  llamajet-driver-ts@https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/bc46f61b1c16e9e9f5ccfb9fd96f60c4956bb0df:
+  llamajet-driver-ts@https://codeload.github.com/llamajet/llamajet-driver-ts/tar.gz/7d293ec56520c3f9a8be00ec722546619e8e85b1:
     dependencies:
       '@serialport/stream': 13.0.0
     transitivePeerDependencies:
