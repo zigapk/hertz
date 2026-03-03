@@ -39,6 +39,7 @@ See bridge-specific docs:
 - Arduino (planned): `src/bridges/arduino/README.md`
 - Raspberry Pi (planned): `src/bridges/raspberry/README.md`
 - Bring your own hardware: `docs/bring-your-own-hardware.md`
+- Testing: `docs/testing.md`
 
 ## Runtime model
 
