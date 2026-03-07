@@ -369,11 +369,12 @@ export function createReconciler<
 	const runEventLoop = async () => {
 		let i: number = 0;
 		while (true) {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			// Get off the main thread to avoid blocking the other parts of the program
+			await new Promise((resolve) => setTimeout(resolve, 0));
 			const pheripheral = reconcilerState.getIthPheriperal(i);
 
 			if (pheripheral?.isInitialized()) {
-				pheripheral.queryForChanges();
+				await pheripheral.queryForChanges();
 			}
 
 			const l = reconcilerState.getPheriperalCount();
