@@ -349,13 +349,14 @@ export function createReconciler<
 		false,
 		null,
 		"",
+		// onUncaughtError: errors that escaped all error boundaries.
 		(e: Error) => {
 			// Re-throw the error to the top level
 			throw e;
 		},
-		(e: Error) => {
-			// Re-throw the error to the top level
-			throw e;
+		// onCaughtError: errors caught by React error boundaries.
+		(_e: Error) => {
+			// Do nothing as the error is already handled by the error boundary
 		},
 		null,
 		null,
