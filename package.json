@@ -21,6 +21,7 @@
     "example:clearcore-motor-velocity": "tsx src/examples/clearcore-motor-velocity.tsx",
     "example:clearcore-motor-position": "tsx src/examples/clearcore-motor-position.tsx",
     "example:clearcore-error-boundary": "tsx src/examples/clearcore-error-boundary.tsx",
+    "example:clearcore-follow": "tsx src/examples/clearcore-follow.tsx",
     "build": "tsdown",
     "prepare": "pnpm run build",
     "test": "vitest run",
