@@ -370,7 +370,7 @@ export function createReconciler<
 		let i: number = 0;
 		while (true) {
 			// Get off the main thread to avoid blocking the other parts of the program
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await new Promise((resolve) => setImmediate(resolve));
 			const pheripheral = reconcilerState.getIthPheriperal(i);
 
 			if (pheripheral?.isInitialized()) {
