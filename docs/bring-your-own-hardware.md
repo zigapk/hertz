@@ -111,14 +111,13 @@ export const ExamplePinIn = createHigherLevelComponent(ExamplePinInPeripheral);
 
 ## Where to look in this repository
 
-- `src/bridges/clearcore`: concrete bridge implementation.
+- `src/bridges/clearcore`: ClearCore bridge (serial to external controller).
+- `src/bridges/raspberrypi`: Raspberry Pi bridge (direct GPIO on the device running Hertz).
 - `src/reconciler/pheripheral.ts`: base peripheral class and lifecycle helpers.
 - `src/reconciler/reconciler.ts`: renderer host config and event loop.
 - `src/reconciler/higher-level-component.tsx`: React wrapper with error propagation.
 
-## Current bridge status
+The ClearCore and Raspberry Pi bridges illustrate two different hardware integration patterns:
 
-At the time of writing:
-
-- ClearCore bridge exists and is used as the reference implementation.
-- Arduino and Raspberry Pi bridges are planned but not implemented yet.
+- **External controller** (ClearCore): a single shared driver instance is passed to all peripherals. The driver communicates over serial.
+- **Local GPIO** (Raspberry Pi): each peripheral creates its own hardware handle. The `Hardware` generic parameter is a lightweight marker, and peripherals dynamically import the native GPIO library during initialization.

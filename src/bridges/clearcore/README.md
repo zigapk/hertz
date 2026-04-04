@@ -2,7 +2,7 @@
 
 This bridge connects Hertz peripherals to a Teknic ClearCore controller.
 
-It is the only implemented bridge in this repository at the moment and serves as both a usable integration and a reference implementation for new bridges.
+It serves as both a usable integration and a reference implementation for new bridges.
 
 ## What is included
 
@@ -67,4 +67,3 @@ See `src/examples` for full programs:
 ## Notes
 
 - Keep identity props immutable after mount (`pin`, `port`, `eStopPin`), as enforced by peripheral implementations.
-- This repository does not currently ship Arduino or Raspberry Pi bridges; those are planned.
