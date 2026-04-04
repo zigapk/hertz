@@ -23,21 +23,18 @@ Hertz is primarily a framework for building hardware reconcilers with React. Thi
 
 - the reconciler/runtime,
 - telemetry utilities for publishing robot state outside React,
-- a working ClearCore bridge and examples.
+- working ClearCore and Raspberry Pi bridges with examples.
 
 ## Bridge status
 
 | Bridge | Status | Notes |
 | --- | --- | --- |
-| ClearCore | Available | Active example bridge in `src/bridges/clearcore` |
+| ClearCore | Available | Serial bridge to Teknic ClearCore. See `src/bridges/clearcore/README.md` |
+| Raspberry Pi | Available | Direct GPIO via `rpi-io`. See `src/bridges/raspberrypi/README.md` |
 | Arduino | Planned | Not implemented yet |
-| Raspberry Pi | Planned | Not implemented yet |
 
-See bridge-specific docs:
+See also:
 
-- ClearCore: `src/bridges/clearcore/README.md`
-- Arduino (planned): `src/bridges/arduino/README.md`
-- Raspberry Pi (planned): `src/bridges/raspberry/README.md`
 - Bring your own hardware: `docs/bring-your-own-hardware.md`
 - Testing: `docs/testing.md`
 
@@ -48,6 +45,7 @@ Hertz runs in a Node.js-like runtime, not in a browser.
 - `Node.js` is the primary target.
 - `Bun`/`Deno` might work but are not officially tested yet.
 - Devices that cannot run Node directly (for example microcontrollers) are controlled from a host process over a transport such as serial.
+- Devices that can run Node (for example Raspberry Pi) can run Hertz directly with local GPIO access.
 
 ## Quick start (ClearCore)
 
@@ -115,6 +113,61 @@ void main();
 - `src/examples/clearcore-blink-with-telemetry.tsx`
 
 The ClearCore bridge communicates over serial through `llamajet-driver-ts`, which expects the firmware protocol implemented by `firmware.ino`.
+
+## Quick start (Raspberry Pi)
+
+The Raspberry Pi bridge runs Hertz directly on the Pi, controlling GPIO pins through the `rpi-io` native module. No external controller or serial connection needed.
+
+**Prerequisites**: Raspberry Pi (4B, 5 and Zero 2, might also work on other models) running Raspberry Pi OS with Node.js >= 23 and `libgpiod` installed (included by default on Bookworm/Trixie).
+
+1. Install dependencies on the Pi:
+
+```bash
+pnpm add react github:zigapk/hertz
+# rpi-io is an optional dependency of hertz -- it installs and compiles
+# automatically on ARM Linux. It is skipped on other platforms.
+```
+
+2. Create a blink program:
+
+```tsx
+import { useEffect, useState } from "react";
+import { RpiDOut, rpiPeripherals, RpiHardware, createReconciler } from "hertz";
+
+const Blink = () => {
+	const [value, setValue] = useState(false);
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setValue((current) => !current);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, []);
+
+	return <RpiDOut gpio={17} value={value} />;
+};
+
+async function main() {
+	const hardware = new RpiHardware();
+
+	const { render, runEventLoop } = createReconciler(
+		rpiPeripherals,
+		hardware,
+	);
+
+	render(<Blink />);
+	await runEventLoop();
+}
+
+void main();
+```
+
+3. More examples:
+
+- `src/examples/rpi-blink.tsx` -- blink an LED on GPIO 17.
+- `src/examples/rpi-follow.tsx` -- output mirrors an input pin.
+- `src/examples/rpi-loopback-test.tsx` -- toggle output and verify via input with timing.
 
 ## Error handling and propagation
 

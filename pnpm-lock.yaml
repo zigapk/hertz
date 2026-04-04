@@ -54,6 +54,10 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@25.3.2)(tsx@4.21.0)
+    optionalDependencies:
+      rpi-io:
+        specifier: ^2.1.0
+        version: 2.1.0
 
 packages:
 
@@ -816,6 +820,9 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  node-addon-api@7.1.1:
+    resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
+
   node-addon-api@8.3.0:
     resolution: {integrity: sha512-8VOpLHFrOQlAH+qA0ZzuGRlALRA6/LVh8QJldbrC4DY0hXoMP0l4Acq8TzFC018HztWiRqyCEj2aTWY2UvnJUg==}
     engines: {node: ^18 || ^20 || >= 21}
@@ -898,6 +905,12 @@ packages:
     resolution: {integrity: sha512-2oMpl67a3zCH9H79LeMcbDhXW/UmWG/y2zuqnF2jQq5uq9TbM9TVyXvA4+t+ne2IIkBdrLpAaRQAvo7YI/Yyeg==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rpi-io@2.1.0:
+    resolution: {integrity: sha512-25EBmJIcsd6AzvK/u0isGHENI7apg6keiqxkvBqodmK6GbxY37t5San+PcNZLFVrx0gUgkm2IUfRviNsT7nXtQ==}
+    engines: {node: '>=23.0.0', npm: '>=10.0.0'}
+    cpu: [arm, arm64]
+    os: [linux]
 
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
@@ -1695,6 +1708,9 @@ snapshots:
 
   nanoid@3.3.11: {}
 
+  node-addon-api@7.1.1:
+    optional: true
+
   node-addon-api@8.3.0: {}
 
   node-graceful-shutdown@1.1.5: {}
@@ -1798,6 +1814,11 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.59.0
       '@rollup/rollup-win32-x64-msvc': 4.59.0
       fsevents: 2.3.3
+
+  rpi-io@2.1.0:
+    dependencies:
+      node-addon-api: 7.1.1
+    optional: true
 
   scheduler@0.27.0: {}
 

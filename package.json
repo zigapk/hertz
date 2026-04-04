@@ -22,6 +22,9 @@
     "example:clearcore-motor-position": "tsx src/examples/clearcore-motor-position.tsx",
     "example:clearcore-error-boundary": "tsx src/examples/clearcore-error-boundary.tsx",
     "example:clearcore-follow": "tsx src/examples/clearcore-follow.tsx",
+    "example:rpi-blink": "tsx src/examples/rpi-blink.tsx",
+    "example:rpi-follow": "tsx src/examples/rpi-follow.tsx",
+    "example:rpi-loopback-test": "tsx src/examples/rpi-loopback-test.tsx",
     "build": "tsdown",
     "prepare": "pnpm run build",
     "test": "vitest run",
@@ -37,6 +40,9 @@
     "react-error-boundary": "^6.0.3",
     "serialport": "^13.0.0",
     "zustand": "^5.0.11"
+  },
+  "optionalDependencies": {
+    "rpi-io": "^2.1.0"
   },
   "peerDependencies": {
     "react": "^19.2.0",
@@ -56,7 +62,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "llamajet-driver-ts"
+      "llamajet-driver-ts",
+      "rpi-io"
     ]
   }
 }
