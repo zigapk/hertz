@@ -23,7 +23,8 @@ Hertz is primarily a framework for building hardware reconcilers with React. Thi
 
 - the reconciler/runtime,
 - telemetry utilities for publishing robot state outside React,
-- working ClearCore and Raspberry Pi bridges with examples.
+- working ClearCore and Raspberry Pi bridges with examples,
+- a hardware-free simulation bridge for demos and visualisation.
 
 ## Bridge status
 
@@ -31,6 +32,7 @@ Hertz is primarily a framework for building hardware reconcilers with React. Thi
 | --- | --- | --- |
 | ClearCore | Available | Serial bridge to Teknic ClearCore. See `src/bridges/clearcore/README.md` |
 | Raspberry Pi | Available | Direct GPIO via `rpi-io`. See `src/bridges/raspberrypi/README.md` |
+| Simulation | Available | In-memory 2D robot, no hardware. See `src/bridges/sim/README.md` |
 | Arduino | Planned | Not implemented yet |
 
 See also:
@@ -168,6 +170,62 @@ void main();
 - `src/examples/rpi-blink.tsx` -- blink an LED on GPIO 17.
 - `src/examples/rpi-follow.tsx` -- output mirrors an input pin.
 - `src/examples/rpi-loopback-test.tsx` -- toggle output and verify via input with timing.
+
+## Quick start (Simulation)
+
+The simulation bridge runs entirely in memory and needs no hardware,
+which makes it the easiest way to try Hertz. It drives a 2D
+differential-drive robot and can stream its state to a browser viewer.
+
+1. Install dependencies in your project:
+
+```bash
+pnpm add react github:zigapk/hertz
+```
+
+2. Create a program that drives the simulated robot and streams it:
+
+```tsx
+import {
+	SimEngine,
+	SimMotor,
+	simPeripherals,
+	startSSEServer,
+} from "hertz";
+import { createReconciler } from "hertz";
+
+const Program = () => (
+	<>
+		<SimMotor side="L" velocity={1} />
+		<SimMotor side="R" velocity={1} />
+	</>
+);
+
+async function main() {
+	const engine = new SimEngine();
+
+	// Advance the physics at 60 Hz.
+	setInterval(() => engine.tick(1 / 60), 1000 / 60);
+
+	// Stream state to the viewer at 30 Hz.
+	const { broadcast } = startSSEServer(engine);
+	setInterval(broadcast, 1000 / 30);
+
+	const { render, runEventLoop } = createReconciler(simPeripherals, engine);
+	render(<Program />);
+	await runEventLoop();
+}
+
+void main();
+```
+
+3. Open `src/examples/sim-roomba-viewer.html` in a browser to watch the
+   robot move.
+
+4. For a complete program, see `src/examples/sim-roomba.tsx`, which
+   implements a naive Roomba as a React state machine (drive forward,
+   back off on collision, rotate, repeat). See `src/bridges/sim/README.md`
+   for the full bridge reference.
 
 ## Error handling and propagation
 

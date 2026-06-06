@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hertz — Roomba Simulator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 16px;
+  }
+  h1 { font-size: 18px; font-weight: 500; opacity: 0.8; }
+  #status {
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    background: #2a2a4a;
+  }
+  #status.connected { color: #4ade80; }
+  #status.disconnected { color: #f87171; }
+  canvas {
+    border: 2px solid #334;
+    border-radius: 6px;
+    background: #16213e;
+  }
+</style>
+</head>
+<body>
+
+<h1>Hertz — Roomba Simulator</h1>
+<div id="status" class="disconnected">Connecting...</div>
+<canvas id="c" width="800" height="800"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+
+// Scale canvas for high-DPI
+const DPR = window.devicePixelRatio || 1;
+const CSS_SIZE = 600;
+canvas.style.width = CSS_SIZE + 'px';
+canvas.style.height = CSS_SIZE + 'px';
+canvas.width = CSS_SIZE * DPR;
+canvas.height = CSS_SIZE * DPR;
+ctx.scale(DPR, DPR);
+
+let latestState = null;
+
+// -- SSE connection with auto-reconnect --
+function connect() {
+  statusEl.textContent = 'Connecting...';
+  statusEl.className = 'disconnected';
+
+  const es = new EventSource('http://localhost:3100/events');
+
+  es.onopen = () => {
+    statusEl.textContent = 'Connected';
+    statusEl.className = 'connected';
+  };
+
+  es.onmessage = (ev) => {
+    try {
+      latestState = JSON.parse(ev.data);
+    } catch (_) { /* ignore bad frames */ }
+  };
+
+  es.onerror = () => {
+    statusEl.textContent = 'Disconnected — retrying...';
+    statusEl.className = 'disconnected';
+    es.close();
+    setTimeout(connect, 1000);
+  };
+}
+connect();
+
+// -- Render loop --
+function draw() {
+  requestAnimationFrame(draw);
+  if (!latestState) return;
+
+  const { robot, obstacles, roomSize } = latestState;
+  const scale = CSS_SIZE / roomSize;
+
+  // Clear
+  ctx.clearRect(0, 0, CSS_SIZE, CSS_SIZE);
+
+  // Room floor
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, CSS_SIZE, CSS_SIZE);
+
+  // Room border
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1, 1, CSS_SIZE - 2, CSS_SIZE - 2);
+
+  // Grid lines (subtle)
+  ctx.strokeStyle = '#1e3a5f22';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < roomSize; i += 50) {
+    const p = i * scale;
+    ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, CSS_SIZE); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(CSS_SIZE, p); ctx.stroke();
+  }
+
+  // Obstacles
+  ctx.fillStyle = '#64748b';
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1;
+  for (const r of obstacles) {
+    const rx = r.x * scale, ry = r.y * scale, rw = r.w * scale, rh = r.h * scale;
+    ctx.fillRect(rx, ry, rw, rh);
+    ctx.strokeRect(rx, ry, rw, rh);
+  }
+
+  // Robot body
+  const rx = robot.x * scale;
+  const ry = robot.y * scale;
+  const rr = robot.radius * scale;
+
+  // Shadow
+  ctx.beginPath();
+  ctx.arc(rx + 2, ry + 2, rr, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fill();
+
+  // Body
+  ctx.beginPath();
+  ctx.arc(rx, ry, rr, 0, Math.PI * 2);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Front sensor arc highlight
+  const sensorColor = robot.sensorPressed ? '#ef4444' : '#4ade80';
+  ctx.beginPath();
+  ctx.arc(rx, ry, rr + 2, robot.heading - Math.PI / 2, robot.heading + Math.PI / 2);
+  ctx.strokeStyle = sensorColor;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Heading indicator line
+  ctx.beginPath();
+  ctx.moveTo(rx, ry);
+  ctx.lineTo(rx + Math.cos(robot.heading) * rr * 1.3, ry + Math.sin(robot.heading) * rr * 1.3);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Centre dot
+  ctx.beginPath();
+  ctx.arc(rx, ry, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

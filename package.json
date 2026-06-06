@@ -25,6 +25,7 @@
     "example:rpi-blink": "tsx src/examples/rpi-blink.tsx",
     "example:rpi-follow": "tsx src/examples/rpi-follow.tsx",
     "example:rpi-loopback-test": "tsx src/examples/rpi-loopback-test.tsx",
+    "example:sim-roomba": "tsx src/examples/sim-roomba.tsx",
     "build": "tsdown",
     "prepare": "pnpm run build",
     "test": "vitest run",
